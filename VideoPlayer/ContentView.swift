@@ -8,17 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    private let streamURL = URL(
+        string: "https://rtvelivestream.rtve.es/rtvesec/la1/la1_main_dvr.m3u8"
+        )!
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+       PlayerView(url: streamURL)
+            .ignoresSafeArea()
     }
-}
-
-#Preview {
-    ContentView()
 }
