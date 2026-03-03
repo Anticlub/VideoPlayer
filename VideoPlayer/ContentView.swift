@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    
+    @State private var playlistURL = URL(string: "https://www.tdtchannels.com/lists/tv_mpd.m3u8")!
     @StateObject private var vm = PlayerViewModel()
     @State private var showChannelBar = true
     @State private var hasSelectedChannel = false
@@ -52,11 +52,23 @@ struct ContentView: View {
             
             overlayView
         }
+        .task {
+            await vm.loadPlaylist(from: playlistURL)
+        }
         .onChange(of: showChannelBar) { _, isShown in
             if isShown {
                 focusedChannelID = vm.selectedChannel.id
             } else {
                 focusedChannelID = nil
+            }
+        
+        }
+        .onChange(of: vm.state) {_, newValue in
+            if case .error = newValue {
+                showChannelBar = true
+                DispatchQueue.main.async {
+                    focusedChannelID = vm.selectedChannel.id
+                }
             }
         }
         .onExitCommand {

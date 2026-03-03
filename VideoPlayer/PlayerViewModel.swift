@@ -22,55 +22,17 @@ final class PlayerViewModel: ObservableObject {
     // Forzar a SwiftUI a recrear el player
     @Published private(set) var playerInstanceID = UUID()
 
-//    // INIT principal: arranca con una lista mock
-//    init() {
-////        let sample: [Channel] = [
-////            Channel(
-////                name: "TVE",
-////                url: URL(string: "https://ztnr.rtve.es/ztnr/1688877.m3u8")!
-////            ),
-////            Channel(
-////                name: "Clan",
-////                url: URL(string: "https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8")!
-////            ),
-////            Channel(
-////                name: "Apple Basic",
-////                url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8")!
-////            ),
-////            
-////        ]
-////
-////        self.channels = sample
-////        self.selectedChannel = sample[0]
-////        self.url = sample[0].url
-////        self.state = .loading
-//        
-//        loadSamplePlaylist()
-//    }
     init() {
-        let sample = """
-        #EXTM3U
-        #EXTINF:-1,Tve
-        https://ztnr.rtve.es/ztnr/1688877.m3u8
-        #EXTINF:-1, Clan
-        https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8
-        #EXTINF:-1,Apple Basic
-        https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8
-        """
-
-        let parsed = M3UParser.parse(sample)
         let fallback = [
             Channel(
-                name: "Apple BipBop",
-                url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
-            )
+                name: "Clan",
+                url: URL(string: "https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8")!)
+        
         ]
 
-        let channels = parsed.isEmpty ? fallback : parsed
-
-        self.channels = channels
-        self.selectedChannel = channels[0]
-        self.url = channels[0].url
+        self.channels = fallback
+        self.selectedChannel = fallback[0]
+        self.url = fallback[0].url
         self.state = .loading
     }
 
@@ -107,5 +69,33 @@ final class PlayerViewModel: ObservableObject {
         state = .loading
         // Luego recreamos el player
         playerInstanceID = UUID()
+    }
+    
+    func loadPlaylist(from url: URL) async {
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            guard let text = String(data: data, encoding: .utf8) else { return }
+            
+            let parsed = M3UParser.parse(text)
+            guard !parsed.isEmpty else {
+                setError("No se encontraron canales en la playlist")
+                return
+            }
+            
+            let filtered = parsed.filter { ch in
+                let s = ch.url.absoluteString.lowercased()
+                return (ch.url.scheme == "https" || ch.url.scheme == "http") && s.contains(".m3u8")
+            }
+            guard !filtered.isEmpty else {
+                setError("La playlist no contiene streams HLS (.m3u8) válidos.")
+                return
+            }
+            
+            channels = parsed
+            selectedChannel = parsed[0]
+            self.url = parsed[0].url
+        } catch {
+            setError("No se pudo cargar la playlist: \(error.localizedDescription)")
+        }
     }
 }
