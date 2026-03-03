@@ -10,7 +10,7 @@ import Combine
 
 @MainActor
 final class PlayerViewModel: ObservableObject {
-    @Published var state: PlayerState = .loading
+    @Published var state: PlayerState
 
     // Lista de canales (por ahora mock)
     @Published private(set) var channels: [Channel]
@@ -30,9 +30,14 @@ final class PlayerViewModel: ObservableObject {
                 url: URL(string: "https://ztnr.rtve.es/ztnr/1688877.m3u8")!
             ),
             Channel(
+                name: "Clan",
+                url: URL(string: "https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8")!
+            ),
+            Channel(
                 name: "Apple Basic",
                 url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8")!
-            )
+            ),
+            
         ]
 
         self.channels = sample
@@ -62,9 +67,10 @@ final class PlayerViewModel: ObservableObject {
     func setError(_ message: String) { state = .error(message) }
 
     func selectChannel(_ channel: Channel) {
+        guard channel.id != selectedChannel.id else { return }
+        
         selectedChannel = channel
         url = channel.url
-        state = .loading
         playerInstanceID = UUID()
     }
 

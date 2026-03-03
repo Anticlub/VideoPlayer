@@ -8,59 +8,71 @@
 import SwiftUI
 
 struct ContentView: View {
-
+    
     @StateObject private var vm = PlayerViewModel()
+    @State private var showChannelBar = true
+    @State private var hasSelectedChannel = false
+    @FocusState private var focusedChannelID: UUID?
     
     var body: some View {
-        ZStack{
-            VStack(spacing: 30) {
-                
+        ZStack(alignment: .top) {
+            
+            if hasSelectedChannel {
+                PlayerView(url: vm.url, state: $vm.state)
+                    .id(vm.playerInstanceID)
+                    .ignoresSafeArea()
+            } else {
+                Color.black.ignoresSafeArea()
+            }
+            
+            if showChannelBar {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 24) {
                         ForEach(vm.channels) { channel in
                             Button {
                                 vm.selectChannel(channel)
+                                hasSelectedChannel = true
+                                showChannelBar = false
                             } label: {
                                 Text(channel.name)
                                     .padding(.horizontal, 28)
-                                    .padding(.vertical)
+                                    .padding(.vertical, 14)
                             }
                             .buttonStyle(.borderedProminent)
+                            .focused($focusedChannelID, equals: channel.id)
                         }
                     }
                     .padding(.horizontal, 40)
+                    .padding(.vertical, 30)
                 }
-                .frame(height: 90)
-                
-                PlayerView(url: vm.url, state: $vm.state)
-                    .id(vm.playerInstanceID)
-                    .ignoresSafeArea()
+//                .frame(height: 130)
+//                .padding(.vertical, 30)
+                .transition(.opacity)
             }
+            
             overlayView
         }
-       
+        .onChange(of: showChannelBar) { isShown in
+            if isShown {
+                focusedChannelID = vm.selectedChannel.id
+            } else {
+                focusedChannelID = nil
+            }
+        }
+        .onExitCommand {
+            showChannelBar = true
+            focusedChannelID = vm.selectedChannel.id
+        }
+        
     }
     
     @ViewBuilder
     private var overlayView: some View {
-        switch vm.state {
-        case .playing:
-            EmptyView()
-            
-        case .loading:
-            VStack{
-                Text("Cargando...")
-                    .padding()
-                    .background(.black.opacity(0.6))
-                    .cornerRadius(16)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.black.opacity(0.35))
-            
-        case .error(let message):
+        if case .error(let message) = vm.state {
             VStack(spacing: 12) {
                 Text("Error de reproducción")
                     .font(.headline)
+
                 Text(message)
                     .font(.footnote)
                     .multilineTextAlignment(.center)
@@ -70,6 +82,8 @@ struct ContentView: View {
             .cornerRadius(12)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.black.opacity(0.35))
+        } else {
+            EmptyView()
         }
     }
 }
