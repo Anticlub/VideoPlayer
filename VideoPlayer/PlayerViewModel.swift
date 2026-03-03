@@ -22,27 +22,55 @@ final class PlayerViewModel: ObservableObject {
     // Forzar a SwiftUI a recrear el player
     @Published private(set) var playerInstanceID = UUID()
 
-    // INIT principal: arranca con una lista mock
+//    // INIT principal: arranca con una lista mock
+//    init() {
+////        let sample: [Channel] = [
+////            Channel(
+////                name: "TVE",
+////                url: URL(string: "https://ztnr.rtve.es/ztnr/1688877.m3u8")!
+////            ),
+////            Channel(
+////                name: "Clan",
+////                url: URL(string: "https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8")!
+////            ),
+////            Channel(
+////                name: "Apple Basic",
+////                url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8")!
+////            ),
+////            
+////        ]
+////
+////        self.channels = sample
+////        self.selectedChannel = sample[0]
+////        self.url = sample[0].url
+////        self.state = .loading
+//        
+//        loadSamplePlaylist()
+//    }
     init() {
-        let sample: [Channel] = [
+        let sample = """
+        #EXTM3U
+        #EXTINF:-1,Tve
+        https://ztnr.rtve.es/ztnr/1688877.m3u8
+        #EXTINF:-1, Clan
+        https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8
+        #EXTINF:-1,Apple Basic
+        https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8
+        """
+
+        let parsed = M3UParser.parse(sample)
+        let fallback = [
             Channel(
-                name: "TVE",
-                url: URL(string: "https://ztnr.rtve.es/ztnr/1688877.m3u8")!
-            ),
-            Channel(
-                name: "Clan",
-                url: URL(string: "https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8")!
-            ),
-            Channel(
-                name: "Apple Basic",
-                url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8")!
-            ),
-            
+                name: "Apple BipBop",
+                url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
+            )
         ]
 
-        self.channels = sample
-        self.selectedChannel = sample[0]
-        self.url = sample[0].url
+        let channels = parsed.isEmpty ? fallback : parsed
+
+        self.channels = channels
+        self.selectedChannel = channels[0]
+        self.url = channels[0].url
         self.state = .loading
     }
 

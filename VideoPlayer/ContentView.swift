@@ -52,7 +52,7 @@ struct ContentView: View {
             
             overlayView
         }
-        .onChange(of: showChannelBar) { isShown in
+        .onChange(of: showChannelBar) { _, isShown in
             if isShown {
                 focusedChannelID = vm.selectedChannel.id
             } else {
