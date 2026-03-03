@@ -12,7 +12,7 @@ struct PlayerView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let controller = AVPlayerViewController()
 
-        context.coordinator.update(.loading)
+        //context.coordinator.update(.loading)
 
         let player = AVPlayer(url: url)
         controller.player = player
