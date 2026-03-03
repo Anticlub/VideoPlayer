@@ -8,15 +8,34 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let streamURL = URL(
-        string: "https://devstreaming-cdn.apple.com/videos/streaming/examplese/bipbop_adv_example_hevc/master.m3u8"
-        )!
-    @State private var playerState: PlayerState = .loading
+
+    @StateObject private var vm = PlayerViewModel()
     
     var body: some View {
         ZStack{
-            PlayerView(url: streamURL, state: $playerState)
-                 .ignoresSafeArea()
+            VStack(spacing: 30) {
+                
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 24) {
+                        ForEach(vm.channels) { channel in
+                            Button {
+                                vm.selectChannel(channel)
+                            } label: {
+                                Text(channel.name)
+                                    .padding(.horizontal, 28)
+                                    .padding(.vertical)
+                            }
+                            .buttonStyle(.borderedProminent)
+                        }
+                    }
+                    .padding(.horizontal, 40)
+                }
+                .frame(height: 90)
+                
+                PlayerView(url: vm.url, state: $vm.state)
+                    .id(vm.playerInstanceID)
+                    .ignoresSafeArea()
+            }
             overlayView
         }
        
@@ -24,13 +43,20 @@ struct ContentView: View {
     
     @ViewBuilder
     private var overlayView: some View {
-        switch playerState {
+        switch vm.state {
         case .playing:
             EmptyView()
+            
         case .loading:
-            Text("Cargando...")
-                .padding()
-                .background(.black.opacity(0.6))
+            VStack{
+                Text("Cargando...")
+                    .padding()
+                    .background(.black.opacity(0.6))
+                    .cornerRadius(16)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.black.opacity(0.35))
+            
         case .error(let message):
             VStack(spacing: 12) {
                 Text("Error de reproducción")
@@ -39,6 +65,11 @@ struct ContentView: View {
                     .font(.footnote)
                     .multilineTextAlignment(.center)
             }
+            .padding()
+            .background(.black.opacity(0.7))
+            .cornerRadius(12)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(.black.opacity(0.35))
         }
     }
 }
