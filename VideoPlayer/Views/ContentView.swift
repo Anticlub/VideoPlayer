@@ -26,28 +26,49 @@ struct ContentView: View {
             }
             
             if showChannelBar {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 24) {
-                        ForEach(vm.channels) { channel in
-                            Button {
-                                vm.selectChannel(channel)
-                                hasSelectedChannel = true
-                                showChannelBar = false
-                            } label: {
-                                Text(channel.name)
-                                    .padding(.horizontal, 28)
-                                    .padding(.vertical, 14)
+                VStack(alignment: .leading, spacing: 18) {
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 18) {
+                            ForEach(vm.playlistSources) {source in
+                                Button {
+                                    Task {
+                                        await vm.selectPlaylist(source)
+                                    }
+                                } label: {
+                                    Text("\(source.kind.rawValue): \(source.name)")
+                                }
+                                .buttonStyle(.bordered)
                             }
-                            .buttonStyle(.borderedProminent)
-                            .focused($focusedChannelID, equals: channel.id)
                         }
+                        .padding(.horizontal, 40)
                     }
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 30)
+                    .frame(height: 70)
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 24) {
+                            ForEach(vm.channels) { channel in
+                                Button {
+                                    vm.selectChannel(channel)
+                                    hasSelectedChannel = true
+                                    showChannelBar = false
+                                } label: {
+                                    Text(channel.name)
+                                        .padding(.horizontal, 28)
+                                        .padding(.vertical, 14)
+                                }
+                                .buttonStyle(.glass)
+                                .focused($focusedChannelID, equals: channel.id)
+                            }
+                        }
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 22)
+                    }
+                    .frame(height: 140)
                 }
-//                .frame(height: 130)
-//                .padding(.vertical, 30)
+                .padding(.top, 30)
                 .transition(.opacity)
+                
             }
             
             overlayView

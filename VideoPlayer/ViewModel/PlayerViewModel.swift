@@ -6,6 +6,8 @@
 //
 
 import Foundation
+internal import Combine
+
 
 @MainActor
 final class PlayerViewModel: ObservableObject {
@@ -28,8 +30,13 @@ final class PlayerViewModel: ObservableObject {
         let sources: [PlaylistSource] = [
             PlaylistSource(
                 name: "España (Live)",
-                url: URL(string: "https://www.m3u.cl/lista/ES.m3u")!,
+                url: URL(string: "https://www.tdtchannels.com/lists/tv_mpd.m3u8")!,
                 kind: .live
+            ),
+            PlaylistSource(
+                name: "Dibujos",
+                url: URL(string: "https://mametchikitty.github.io/Listas-IPTV/dibujos-animados.m3u")!,
+                kind: .vod
             ),
         
         ]
