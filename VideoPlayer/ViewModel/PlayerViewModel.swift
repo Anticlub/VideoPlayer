@@ -6,11 +6,13 @@
 //
 
 import Foundation
-import Combine
 
 @MainActor
 final class PlayerViewModel: ObservableObject {
     @Published var state: PlayerState
+    
+    @Published private(set) var playlistSources: [PlaylistSource]
+    @Published private(set) var selectedPlaylist: PlaylistSource?
 
     // Lista de canales (por ahora mock)
     @Published private(set) var channels: [Channel]
@@ -23,32 +25,26 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var playerInstanceID = UUID()
 
     init() {
-        let fallback = [
-            Channel(
-                name: "Clan",
-                url: URL(string: "https://rtvelivestream.rtve.es/rtvesec/clan/clan_main_dvr.m3u8")!)
+        let sources: [PlaylistSource] = [
+            PlaylistSource(
+                name: "España (Live)",
+                url: URL(string: "https://www.m3u.cl/lista/ES.m3u")!,
+                kind: .live
+            ),
         
         ]
 
-        self.channels = fallback
-        self.selectedChannel = fallback[0]
-        self.url = fallback[0].url
-        self.state = .loading
-    }
-
-    // INIT de compatibilidad: si aún estás creando el VM con una URL desde ContentView
-    convenience init(url: URL) {
-        self.init(channels: [Channel(name: "Canal", url: url)], selectedIndex: 0)
-    }
-
-    // INIT útil si luego cargas canales desde fichero / red
-    init(channels: [Channel], selectedIndex: Int = 0) {
-        precondition(!channels.isEmpty, "channels no puede estar vacío")
-
-        let index = max(0, min(selectedIndex, channels.count - 1))
-        self.channels = channels
-        self.selectedChannel = channels[index]
-        self.url = channels[index].url
+        self.playlistSources = sources
+        self.selectedPlaylist = sources.first
+        
+        let fallbackChannel = Channel(
+            name: "Apple BipBop",
+            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
+        )
+        
+        self.channels = [fallbackChannel]
+        self.selectedChannel = fallbackChannel
+        self.url = fallbackChannel.url
         self.state = .loading
     }
 
@@ -64,12 +60,6 @@ final class PlayerViewModel: ObservableObject {
         playerInstanceID = UUID()
     }
 
-    func restartPlayer() {
-        // Primero salimos del error para que el overlay desaparezca
-        state = .loading
-        // Luego recreamos el player
-        playerInstanceID = UUID()
-    }
     
     func loadPlaylist(from url: URL) async {
         do {
@@ -82,15 +72,6 @@ final class PlayerViewModel: ObservableObject {
                 return
             }
             
-            let filtered = parsed.filter { ch in
-                let s = ch.url.absoluteString.lowercased()
-                return (ch.url.scheme == "https" || ch.url.scheme == "http") && s.contains(".m3u8")
-            }
-            guard !filtered.isEmpty else {
-                setError("La playlist no contiene streams HLS (.m3u8) válidos.")
-                return
-            }
-            
             channels = parsed
             selectedChannel = parsed[0]
             self.url = parsed[0].url
@@ -98,4 +79,10 @@ final class PlayerViewModel: ObservableObject {
             setError("No se pudo cargar la playlist: \(error.localizedDescription)")
         }
     }
+    
+    func selectPlaylist(_ source: PlaylistSource) async {
+        selectedPlaylist = source
+        await loadPlaylist(from: source.url)
+    }
+    
 }
