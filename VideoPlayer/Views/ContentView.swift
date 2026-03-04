@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var showChannelBar = true
     @State private var hasSelectedChannel = false
     @FocusState private var focusedChannelID: UUID?
+    @State private var focusedCardID: UUID?
     
     private var channelsByGroup: [(group: String, items: [Channel])] {
         
@@ -49,12 +50,12 @@ struct ContentView: View {
                                 } label: {
                                     Text("\(source.kind.rawValue): \(source.name)")
                                 }
-                                .buttonStyle(.glass)
+                                .buttonStyle(.bordered)
                             }
                         }
                         .padding(.horizontal, 40)
                     }
-                    .frame(height: 120)
+                    .frame(height: 100)
                     
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(alignment: .leading, spacing: 20){
@@ -73,45 +74,53 @@ struct ContentView: View {
                                                 showChannelBar = false
                                             } label: {
                                                 VStack(spacing: 10) {
+                                                    ZStack {
+                                                        RoundedRectangle(cornerRadius: 18)
+                                                            .fill(.black.opacity(0.35))
+
                                                         if let logoURL = channel.logoURL {
                                                             AsyncImage(url: logoURL) { phase in
                                                                 switch phase {
                                                                 case .empty:
-                                                                    RoundedRectangle(cornerRadius: 12)
-                                                                        .fill(.black.opacity(0.4))
-                                                                        .frame(width: 220, height: 124)
-
+                                                                    ProgressView()
                                                                 case .success(let image):
                                                                     image
                                                                         .resizable()
                                                                         .scaledToFit()
-                                                                        .frame(width: 220, height: 124)
-                                                                        .clipShape(RoundedRectangle(cornerRadius: 12))
-
+                                                                        .padding(18)
                                                                 case .failure:
-                                                                    RoundedRectangle(cornerRadius: 12)
-                                                                        .fill(.black.opacity(0.4))
-                                                                        .overlay(Text("Sin imagen").font(.caption))
-                                                                        .frame(width: 220, height: 124)
-
+                                                                    Image(systemName: "tv")
+                                                                        .font(.system(size: 34))
+                                                                        .foregroundStyle(.white.opacity(0.7))
                                                                 @unknown default:
-                                                                    RoundedRectangle(cornerRadius: 12)
-                                                                        .fill(.black.opacity(0.4))
-                                                                        .frame(width: 220, height: 124)
+                                                                    EmptyView()
                                                                 }
                                                             }
-
-                                                            Text(channel.name)
-                                                                .font(.caption)
-                                                                .lineLimit(2)
-                                                                .multilineTextAlignment(.center)
-                                                                .frame(width: 220)
                                                         } else {
-                                                            Text(channel.name)
-                                                                .padding(.horizontal, 28)
-                                                                .padding(.vertical, 14)
+                                                            Image(systemName: "tv")
+                                                                .font(.system(size: 34))
+                                                                .foregroundStyle(.white.opacity(0.7))
                                                         }
+
+                                                        // Borde cuando está enfocado
+                                                        RoundedRectangle(cornerRadius: 18)
+                                                            .stroke(
+                                                                focusedCardID == channel.id ? .white.opacity(0.9) : .clear,
+                                                                lineWidth: 3
+                                                            )
                                                     }
+                                                    .frame(width: 260, height: 150)
+                                                    .shadow(radius: focusedCardID == channel.id ? 16 : 6)
+
+                                                    Text(channel.name)
+                                                        .font(.caption)
+                                                        .lineLimit(2)
+                                                        .multilineTextAlignment(.center)
+                                                        .frame(width: 260)
+                                                }
+                                                // Zoom con foco
+                                                .scaleEffect(focusedCardID == channel.id ? 1.12 : 1.0)
+                                                .animation(.easeInOut(duration: 0.15), value: focusedCardID)
                                             }
                                             .buttonStyle(.glass)
                                             .focused($focusedChannelID, equals: channel.id)
