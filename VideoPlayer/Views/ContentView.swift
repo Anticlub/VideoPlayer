@@ -14,6 +14,17 @@ struct ContentView: View {
     @State private var hasSelectedChannel = false
     @FocusState private var focusedChannelID: UUID?
     
+    private var channelsByGroup: [(group: String, items: [Channel])] {
+        
+        let grouped = Dictionary(grouping: vm.channels) { channel in
+            channel.groupTitle ?? "Otros"
+        }
+
+        return grouped
+            .map { ($0.key, $0.value) }
+            .sorted { $0.0 < $1.0 }
+    }
+    
     var body: some View {
         ZStack(alignment: .top) {
             
@@ -38,33 +49,79 @@ struct ContentView: View {
                                 } label: {
                                     Text("\(source.kind.rawValue): \(source.name)")
                                 }
-                                .buttonStyle(.bordered)
-                            }
-                        }
-                        .padding(.horizontal, 40)
-                    }
-                    .frame(height: 70)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 24) {
-                            ForEach(vm.channels) { channel in
-                                Button {
-                                    vm.selectChannel(channel)
-                                    hasSelectedChannel = true
-                                    showChannelBar = false
-                                } label: {
-                                    Text(channel.name)
-                                        .padding(.horizontal, 28)
-                                        .padding(.vertical, 14)
-                                }
                                 .buttonStyle(.glass)
-                                .focused($focusedChannelID, equals: channel.id)
                             }
                         }
                         .padding(.horizontal, 40)
-                        .padding(.vertical, 22)
                     }
-                    .frame(height: 140)
+                    .frame(height: 120)
+                    
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 20){
+                            ForEach(channelsByGroup,id: \.group) { group in
+                            
+                                Text(group.group)
+                                    .font(.headline)
+                                    .padding(.horizontal, 40)
+                                
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 24) {
+                                        ForEach(group.items) { channel in
+                                            Button {
+                                                vm.selectChannel(channel)
+                                                hasSelectedChannel = true
+                                                showChannelBar = false
+                                            } label: {
+                                                VStack(spacing: 10) {
+                                                        if let logoURL = channel.logoURL {
+                                                            AsyncImage(url: logoURL) { phase in
+                                                                switch phase {
+                                                                case .empty:
+                                                                    RoundedRectangle(cornerRadius: 12)
+                                                                        .fill(.black.opacity(0.4))
+                                                                        .frame(width: 220, height: 124)
+
+                                                                case .success(let image):
+                                                                    image
+                                                                        .resizable()
+                                                                        .scaledToFit()
+                                                                        .frame(width: 220, height: 124)
+                                                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                                                                case .failure:
+                                                                    RoundedRectangle(cornerRadius: 12)
+                                                                        .fill(.black.opacity(0.4))
+                                                                        .overlay(Text("Sin imagen").font(.caption))
+                                                                        .frame(width: 220, height: 124)
+
+                                                                @unknown default:
+                                                                    RoundedRectangle(cornerRadius: 12)
+                                                                        .fill(.black.opacity(0.4))
+                                                                        .frame(width: 220, height: 124)
+                                                                }
+                                                            }
+
+                                                            Text(channel.name)
+                                                                .font(.caption)
+                                                                .lineLimit(2)
+                                                                .multilineTextAlignment(.center)
+                                                                .frame(width: 220)
+                                                        } else {
+                                                            Text(channel.name)
+                                                                .padding(.horizontal, 28)
+                                                                .padding(.vertical, 14)
+                                                        }
+                                                    }
+                                            }
+                                            .buttonStyle(.glass)
+                                            .focused($focusedChannelID, equals: channel.id)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .frame(height: 300)
                 }
                 .padding(.top, 30)
                 .transition(.opacity)

@@ -50,7 +50,7 @@ enum M3UParser {
             
             if let url = URL(string: line) {
                 let name = pendingName ?? url.host ?? "Canal"
-                channels.append(Channel(name: name, url: url))
+                channels.append(Channel(name: name, url: url, logoURL: pendingLogoURL, groupTitle: pendingGroupTitle))
             }
             pendingName = nil
             pendingLogoURL = nil
