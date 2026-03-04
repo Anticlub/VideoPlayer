@@ -12,8 +12,7 @@ struct ContentView: View {
     @StateObject private var vm = PlayerViewModel()
     @State private var showChannelBar = true
     @State private var hasSelectedChannel = false
-    @FocusState private var focusedChannelID: UUID?
-    @State private var focusedCardID: UUID?
+    @FocusState private var focusedCardID: UUID?
     
     private var channelsByGroup: [(group: String, items: [Channel])] {
         
@@ -66,7 +65,7 @@ struct ContentView: View {
                                     .padding(.horizontal, 40)
                                 
                                 ScrollView(.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 24) {
+                                    HStack(spacing: 70) {
                                         ForEach(group.items) { channel in
                                             Button {
                                                 vm.selectChannel(channel)
@@ -123,14 +122,15 @@ struct ContentView: View {
                                                 .animation(.easeInOut(duration: 0.15), value: focusedCardID)
                                             }
                                             .buttonStyle(.glass)
-                                            .focused($focusedChannelID, equals: channel.id)
+                                            .focused($focusedCardID, equals: channel.id)
                                         }
                                     }
+                                    .padding(.vertical, 22)
                                 }
                             }
                         }
                     }
-                    .frame(height: 300)
+                    .frame(height: 330)
                 }
                 .padding(.top, 30)
                 .transition(.opacity)
@@ -144,9 +144,9 @@ struct ContentView: View {
         }
         .onChange(of: showChannelBar) { _, isShown in
             if isShown {
-                focusedChannelID = vm.selectedChannel.id
+                focusedCardID = vm.selectedChannel.id
             } else {
-                focusedChannelID = nil
+                focusedCardID = nil
             }
         
         }
@@ -154,13 +154,13 @@ struct ContentView: View {
             if case .error = newValue {
                 showChannelBar = true
                 DispatchQueue.main.async {
-                    focusedChannelID = vm.selectedChannel.id
+                    focusedCardID = vm.selectedChannel.id
                 }
             }
         }
         .onExitCommand {
             showChannelBar = true
-            focusedChannelID = vm.selectedChannel.id
+            focusedCardID = vm.selectedChannel.id
         }
         
     }
