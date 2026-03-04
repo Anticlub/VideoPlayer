@@ -8,9 +8,13 @@
 import Foundation
 
 enum M3UParser {
+    
     static func parse(_ text: String) -> [Channel] {
         var channels: [Channel] = []
+    
         var pendingName: String?
+        var pendingLogoURL: URL?
+        var pendingGroupTitle: String?
         
         let lines = text
             .replacingOccurrences(of: "\r\n", with: "\n")
@@ -29,6 +33,16 @@ enum M3UParser {
                 } else {
                     pendingName = "Canal"
                 }
+                
+                if let logoString = extractAttribute("tvg-logo", from: line),
+                   let logtoURL = URL(string: logoString) {
+                    pendingLogoURL = logtoURL
+                } else {
+                    pendingLogoURL = nil
+                }
+                
+                pendingGroupTitle = extractAttribute("group-title", from: line)
+                
                 continue
             }
             
@@ -39,7 +53,17 @@ enum M3UParser {
                 channels.append(Channel(name: name, url: url))
             }
             pendingName = nil
+            pendingLogoURL = nil
+            pendingGroupTitle = nil
         }
         return channels
+    }
+    
+    private static func extractAttribute(_ key: String, from line: String) -> String? {
+        
+        guard let range = line.range(of: "\(key)=\"") else {return nil}
+        let start = range.upperBound
+        guard let end = line[start...].firstIndex(of: "\"") else {return nil}
+        return String(line[start..<end])
     }
 }
