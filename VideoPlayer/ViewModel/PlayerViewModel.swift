@@ -117,4 +117,8 @@ final class PlayerViewModel: ObservableObject {
         selectChannel(channels[prevIndex])
     }
     
+    func stop() {
+        playerService.stop()
+    }
+    
 }

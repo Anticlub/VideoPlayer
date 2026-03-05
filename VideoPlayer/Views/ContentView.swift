@@ -30,7 +30,7 @@ struct ContentView: View {
         ZStack(alignment: .top) {
             
             if hasSelectedChannel {
-                PlayerView(player: vm.player, state: $vm.state, showsPlaybackControls: !showControls)
+                PlayerView(player: vm.player, state: $vm.state, showsPlaybackControls: !showControls || showChannelBar)
                     .id(vm.playerInstanceID)
                     .ignoresSafeArea()
             } else {
@@ -144,7 +144,12 @@ struct ContentView: View {
                     PlayerControlsView(
                         onPrevious: vm.previousChannel,
                         onPlayPause: vm.playPause,
-                        onNext: vm.nextChannel
+                        onNext: vm.nextChannel,
+                        onStop: {
+                            vm.stop()
+                            showControls = false
+                            showChannelBar = true
+                        }
                     )
                     .padding(.bottom, 140)
                 }

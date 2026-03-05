@@ -6,11 +6,13 @@ struct PlayerControlsView: View {
         case prev
         case playPause
         case next
+        case stop
     }
 
     let onPrevious: () -> Void
     let onPlayPause: () -> Void
     let onNext: () -> Void
+    let onStop: () -> Void
 
     @FocusState private var focused: FocusTarget?
 
@@ -32,6 +34,12 @@ struct PlayerControlsView: View {
             .focused($focused, equals: .playPause)
             .prefersDefaultFocus(true, in: focusNamespace)
 
+            Button { onStop() } label: {
+                Image(systemName: "stop.fill")
+                    .font(.title)
+            }
+            .focused($focused, equals: .stop)
+            
             Button { onNext() } label: {
                 Image(systemName: "forward.fill")
                     .font(.title)
