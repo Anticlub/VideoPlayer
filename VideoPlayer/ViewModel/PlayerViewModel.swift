@@ -7,10 +7,15 @@
 
 import Foundation
 internal import Combine
+import AVFoundation
 
 
 @MainActor
 final class PlayerViewModel: ObservableObject {
+    private let playerService = PlayerService()
+    var player: AVPlayer? {
+        playerService.player
+    }
     @Published var state: PlayerState
     
     @Published private(set) var playlistSources: [PlaylistSource]
@@ -63,7 +68,7 @@ final class PlayerViewModel: ObservableObject {
         guard channel.id != selectedChannel.id else { return }
         
         selectedChannel = channel
-        url = channel.url
+        playerService.load(url: channel.url)
         playerInstanceID = UUID()
     }
 
@@ -90,6 +95,26 @@ final class PlayerViewModel: ObservableObject {
     func selectPlaylist(_ source: PlaylistSource) async {
         selectedPlaylist = source
         await loadPlaylist(from: source.url)
+    }
+    
+    func playPause() {
+        playerService.togglePlayPause()
+    }
+    
+    func loadChannel(url: URL) {
+        playerService.load(url: url)
+    }
+    
+    func nextChannel() {
+        guard let idx = channels.firstIndex(where: { $0.id == selectedChannel.id}) else { return }
+        let nextIndex = min(idx + 1, channels.count - 1)
+        selectChannel(channels[nextIndex])
+    }
+    
+    func previousChannel() {
+        guard let idx = channels.firstIndex(where: { $0.id == selectedChannel.id}) else { return }
+        let prevIndex = max(idx - 1, 0)
+        selectChannel(channels[prevIndex])
     }
     
 }

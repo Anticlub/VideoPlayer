@@ -29,46 +29,9 @@
 		C0E4A41F2F55A31A004042A1 /* VideoPlayerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoPlayerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		C05041FB2F574548007A3F83 /* Exceptions for "VideoPlayer" folder in "VideoPlayer" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				App/VideoPlayerApp.swift,
-				Assets.xcassets,
-				Models/Channel.swift,
-				Models/PlayerState.swift,
-				Models/PlaylistSource.swift,
-				Services/M3UParser.swift,
-				ViewModel/PlayerViewModel.swift,
-				Views/ContentView.swift,
-				Views/PlayerView.swift,
-			);
-			target = C0E4A4072F55A317004042A1 /* VideoPlayer */;
-		};
-		C05041FC2F574548007A3F83 /* Exceptions for "VideoPlayer" folder in "VideoPlayerUITests" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				App/VideoPlayerApp.swift,
-				Assets.xcassets,
-				Models/Channel.swift,
-				Models/PlayerState.swift,
-				Models/PlaylistSource.swift,
-				Services/M3UParser.swift,
-				ViewModel/PlayerViewModel.swift,
-				Views/ContentView.swift,
-				Views/PlayerView.swift,
-			);
-			target = C0E4A41E2F55A31A004042A1 /* VideoPlayerUITests */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C05041F22F574548007A3F83 /* VideoPlayer */ = {
+		C0E4A40A2F55A317004042A1 /* VideoPlayer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				C05041FB2F574548007A3F83 /* Exceptions for "VideoPlayer" folder in "VideoPlayer" target */,
-				C05041FC2F574548007A3F83 /* Exceptions for "VideoPlayer" folder in "VideoPlayerUITests" target */,
-			);
 			path = VideoPlayer;
 			sourceTree = "<group>";
 		};
@@ -112,7 +75,7 @@
 		C0E4A3FF2F55A317004042A1 = {
 			isa = PBXGroup;
 			children = (
-				C05041F22F574548007A3F83 /* VideoPlayer */,
+				C0E4A40A2F55A317004042A1 /* VideoPlayer */,
 				C0E4A4182F55A31A004042A1 /* VideoPlayerTests */,
 				C0E4A4222F55A31A004042A1 /* VideoPlayerUITests */,
 				C0E4A4092F55A317004042A1 /* Products */,
@@ -143,6 +106,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C0E4A40A2F55A317004042A1 /* VideoPlayer */,
 			);
 			name = VideoPlayer;
 			packageProductDependencies = (
@@ -188,7 +154,6 @@
 				C0E4A4212F55A31A004042A1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				C05041F22F574548007A3F83 /* VideoPlayer */,
 				C0E4A4222F55A31A004042A1 /* VideoPlayerUITests */,
 			);
 			name = VideoPlayerUITests;
@@ -451,6 +416,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -480,6 +446,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};

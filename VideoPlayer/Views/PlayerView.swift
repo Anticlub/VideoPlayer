@@ -2,8 +2,9 @@ import SwiftUI
 import AVKit
 
 struct PlayerView: UIViewControllerRepresentable {
-    let url: URL
+    let player: AVPlayer?
     @Binding var state: PlayerState
+    let showsPlaybackControls: Bool
 
     func makeCoordinator() -> Coordinator {
         Coordinator(state: $state)
@@ -11,21 +12,19 @@ struct PlayerView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let controller = AVPlayerViewController()
-
-        //context.coordinator.update(.loading)
-
-        let player = AVPlayer(url: url)
+        
         controller.player = player
-        controller.showsPlaybackControls = true
+        controller.showsPlaybackControls = showsPlaybackControls
 
-        context.coordinator.attachPlayer(player)
-
-        player.play()
+        if let player {
+            context.coordinator.attachPlayer(player)
+            player.play()
+        }
         return controller
     }
 
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
-        // V1: no actualizamos la URL en caliente
+        uiViewController.showsPlaybackControls = showsPlaybackControls
     }
 
     static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
@@ -110,5 +109,7 @@ struct PlayerView: UIViewControllerRepresentable {
             loadingTimeoutTask?.cancel()
             loadingTimeoutTask = nil
         }
+        
+    
     }
 }
