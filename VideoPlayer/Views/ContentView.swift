@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var showChannelBar = true
     @State private var hasSelectedChannel = false
     @FocusState private var focusedCardID: UUID?
+    @State private var showControls = false
     
     private var channelsByGroup: [(group: String, items: [Channel])] {
         
@@ -29,7 +30,7 @@ struct ContentView: View {
         ZStack(alignment: .top) {
             
             if hasSelectedChannel {
-                PlayerView(url: vm.url, state: $vm.state)
+                PlayerView(player: vm.player, state: $vm.state, showsPlaybackControls: !showControls || showChannelBar)
                     .id(vm.playerInstanceID)
                     .ignoresSafeArea()
             } else {
@@ -136,13 +137,32 @@ struct ContentView: View {
                 .transition(.opacity)
                 
             }
-            
+            if hasSelectedChannel && !showChannelBar && showControls{
+                VStack {
+                    Spacer()
+                    
+                    PlayerControlsView(
+                        onPrevious: vm.previousChannel,
+                        onPlayPause: vm.playPause,
+                        onNext: vm.nextChannel,
+                        onStop: {
+                            vm.stop()
+                            showControls = false
+                            showChannelBar = true
+                        }
+                    )
+                    .padding(.bottom, 140)
+                }
+                .zIndex(50)
+                .transition(.opacity)
+            }
+                
             overlayView
         }
         .task {
             await vm.loadPlaylist(from: playlistURL)
         }
-        .onChange(of: showChannelBar) { _, isShown in
+        .onChange(of: showChannelBar) {_, isShown in
             if isShown {
                 focusedCardID = vm.selectedChannel.id
             } else {
@@ -159,8 +179,17 @@ struct ContentView: View {
             }
         }
         .onExitCommand {
-            showChannelBar = true
-            focusedCardID = vm.selectedChannel.id
+            if showChannelBar {
+                // Si el menú de canales está abierto, lo cerramos
+                withAnimation(.easeInOut) { showChannelBar = false }
+                showControls = false
+                focusedCardID = nil
+            } else {
+                // Si estamos en playback, togglear controles custom
+                showControls.toggle()
+                // Importante: si muestro controles, aseguro que el menu de canales no esté
+                showChannelBar = false
+            }
         }
         
     }
