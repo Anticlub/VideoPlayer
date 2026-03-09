@@ -22,11 +22,9 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var playlistSources: [PlaylistSource]
     @Published private(set) var selectedPlaylist: PlaylistSource?
 
-    // Lista de canales (por ahora mock)
     @Published private(set) var channels: [Channel]
     @Published private(set) var selectedChannel: Channel
 
-    // Forzar a SwiftUI a recrear el player
     @Published private(set) var playerInstanceID = UUID()
 
     init() {
@@ -49,7 +47,10 @@ final class PlayerViewModel: ObservableObject {
         
         let fallbackChannel = Channel(
             name: "Apple BipBop",
-            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
+            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!,
+            drmConfiguration: DRMConfiguration(
+                licenseURL: URL(string: "https://example.com/license")!
+            )
         )
         
         self.channels = [fallbackChannel]
@@ -65,7 +66,13 @@ final class PlayerViewModel: ObservableObject {
         guard channel.id != selectedChannel.id else { return }
         
         selectedChannel = channel
-        playerService.load(url: channel.url)
+        
+        let source = PlaybackSource(
+            url: channel.url,
+            drm: channel.drmConfiguration
+        )
+        
+        playerService.load(source: source)
         playerInstanceID = UUID()
     }
 

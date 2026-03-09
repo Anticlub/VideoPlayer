@@ -10,9 +10,19 @@ import AVFoundation
 final class PlayerService {
     
     private(set) var player: AVPlayer?
+    private var drmManager: DRMManager?
     
-    func load(url: URL) {
-        player = AVPlayer(url: url)
+    func load(source: PlaybackSource) {
+        let asset = AVURLAsset(url: source.url)
+        
+        if let drm = source.drm {
+            configureDRM(for: asset, configuration: drm)
+        } else {
+            drmManager = nil
+        }
+        
+        let item = AVPlayerItem(asset: asset)
+        player = AVPlayer(playerItem: item)
     }
     
     func play() {
@@ -36,5 +46,12 @@ final class PlayerService {
     func stop() {
         player?.pause()
         player = nil
+    }
+    
+    private func configureDRM(for asset: AVURLAsset, configuration: DRMConfiguration) {
+//        de momento no implementamos FairPlay, este metodo sera para configurar resourceloader, licencia y certificado
+        let manager = DRMManager(configuration: configuration)
+        manager.prepare(asset: asset)
+        drmManager = manager
     }
 }
