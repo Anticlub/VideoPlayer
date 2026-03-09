@@ -8,5 +8,6 @@
 import Foundation
 
 struct DRMConfiguration: Equatable {
+    let certificateURL: URL
     let licenseURL: URL
 }

@@ -49,6 +49,7 @@ final class PlayerViewModel: ObservableObject {
             name: "Apple BipBop",
             url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!,
             drmConfiguration: DRMConfiguration(
+                certificateURL: URL(string: "https://example.com/license")!,
                 licenseURL: URL(string: "https://example.com/license")!
             )
         )
