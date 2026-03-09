@@ -8,6 +8,7 @@
 import AVFoundation
 
 final class PlayerService {
+    
     private(set) var player: AVPlayer?
     
     func load(url: URL) {

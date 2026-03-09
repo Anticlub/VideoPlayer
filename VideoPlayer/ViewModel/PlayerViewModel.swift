@@ -13,6 +13,7 @@ import AVFoundation
 @MainActor
 final class PlayerViewModel: ObservableObject {
     private let playerService = PlayerService()
+    
     var player: AVPlayer? {
         playerService.player
     }
@@ -24,9 +25,6 @@ final class PlayerViewModel: ObservableObject {
     // Lista de canales (por ahora mock)
     @Published private(set) var channels: [Channel]
     @Published private(set) var selectedChannel: Channel
-
-    // URL actual que usa el PlayerView
-    @Published private(set) var url: URL
 
     // Forzar a SwiftUI a recrear el player
     @Published private(set) var playerInstanceID = UUID()
@@ -56,7 +54,6 @@ final class PlayerViewModel: ObservableObject {
         
         self.channels = [fallbackChannel]
         self.selectedChannel = fallbackChannel
-        self.url = fallbackChannel.url
         self.state = .loading
     }
 
@@ -86,7 +83,6 @@ final class PlayerViewModel: ObservableObject {
             
             channels = parsed
             selectedChannel = parsed[0]
-            self.url = parsed[0].url
         } catch {
             setError("No se pudo cargar la playlist: \(error.localizedDescription)")
         }
@@ -101,9 +97,6 @@ final class PlayerViewModel: ObservableObject {
         playerService.togglePlayPause()
     }
     
-    func loadChannel(url: URL) {
-        playerService.load(url: url)
-    }
     
     func nextChannel() {
         guard let idx = channels.firstIndex(where: { $0.id == selectedChannel.id}) else { return }
