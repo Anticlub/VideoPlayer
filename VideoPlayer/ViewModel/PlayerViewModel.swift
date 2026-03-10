@@ -43,7 +43,8 @@ final class PlayerViewModel: ObservableObject {
                 name: "Axinom DRM Test",
                 url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Encrypted_Cbcs/Manifest_1080p.m3u8")!,
                 kind: .vod
-            )
+            ),
+            
         
         ]
 
@@ -53,10 +54,7 @@ final class PlayerViewModel: ObservableObject {
         let fallbackChannel = Channel(
             name: "Apple BipBop",
             url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!,
-            drmConfiguration: DRMConfiguration(
-                certificateURL: URL(string: "https://example.com/license")!,
-                licenseURL: URL(string: "https://example.com/license")!
-            )
+            drmConfiguration: nil
         )
         
         self.channels = [fallbackChannel]
@@ -111,9 +109,9 @@ final class PlayerViewModel: ObservableObject {
         if isDirectPlaybackSource(source.url) {
             let drmConfiguration: DRMConfiguration?
 
-            if source.name == "Axinom DRM Test" {
+            if source.name == "Axinom FairPlay Test" {
                 drmConfiguration = DRMConfiguration(
-                    certificateURL: URL(string: "https://example.com/certificate")!,
+                    certificateURL: URL(string: "https://drm-fairplay-licensing.axprod.net/AcquireLicense")!,
                     licenseURL: URL(string: "https://drm-fairplay-licensing.axprod.net/AcquireLicense")!
                 )
             } else {
@@ -129,7 +127,6 @@ final class PlayerViewModel: ObservableObject {
             channels = [directChannel]
             selectedChannel = directChannel
             selectChannel(directChannel)
-            
             return
         }
 
@@ -160,5 +157,7 @@ final class PlayerViewModel: ObservableObject {
     private func isDirectPlaybackSource(_ url: URL) -> Bool {
         let lastPath = url.lastPathComponent.lowercased()
         return lastPath.contains("manifest")
+            || lastPath.contains("playlist")
+            || lastPath.contains("index")
     }
 }
