@@ -36,7 +36,7 @@ final class PlayerViewModel: ObservableObject {
             ),
             PlaylistSource(
                 name: "Dibujos",
-                url: URL(string: "https://mametchikitty.github.io/Listas-IPTV/dibujos-animados.m3u")!,
+                url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Clear/Manifest_1080p.m3u8")!,
                 kind: .vod
             ),
         
@@ -64,15 +64,17 @@ final class PlayerViewModel: ObservableObject {
     func setError(_ message: String) { state = .error(message) }
 
     func selectChannel(_ channel: Channel) {
-        guard channel.id != selectedChannel.id else { return }
-        
+        if channel.id == selectedChannel.id, player != nil {
+            return
+        }
+
         selectedChannel = channel
-        
+
         let source = PlaybackSource(
             url: channel.url,
             drm: channel.drmConfiguration
         )
-        
+
         playerService.load(source: source)
         playerInstanceID = UUID()
     }
@@ -98,6 +100,19 @@ final class PlayerViewModel: ObservableObject {
     
     func selectPlaylist(_ source: PlaylistSource) async {
         selectedPlaylist = source
+
+        if isDirectPlaybackSource(source.url) {
+            let directChannel = Channel(
+                name: source.name,
+                url: source.url,
+                drmConfiguration: nil
+            )
+
+            channels = [directChannel]
+            selectedChannel = directChannel
+            return
+        }
+
         await loadPlaylist(from: source.url)
     }
     
@@ -122,4 +137,8 @@ final class PlayerViewModel: ObservableObject {
         playerService.stop()
     }
     
+    private func isDirectPlaybackSource(_ url: URL) -> Bool {
+        let lastPath = url.lastPathComponent.lowercased()
+        return lastPath.contains("manifest")
+    }
 }
