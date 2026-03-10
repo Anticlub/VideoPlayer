@@ -35,10 +35,15 @@ final class PlayerViewModel: ObservableObject {
                 kind: .live
             ),
             PlaylistSource(
-                name: "Dibujos",
+                name: "Axinom DRM Clear",
                 url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Clear/Manifest_1080p.m3u8")!,
                 kind: .vod
             ),
+            PlaylistSource(
+                name: "Axinom DRM Test",
+                url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Encrypted_Cbcs/Manifest_1080p.m3u8")!,
+                kind: .vod
+            )
         
         ]
 
@@ -69,12 +74,14 @@ final class PlayerViewModel: ObservableObject {
         }
 
         selectedChannel = channel
-
+        
         let source = PlaybackSource(
             url: channel.url,
             drm: channel.drmConfiguration
         )
 
+//        print("PlayerService.load -> url: \(source.url.absoluteString)")
+//        print("PlayerService.load -> drm: \(String(describing: source.drm))")
         playerService.load(source: source)
         playerInstanceID = UUID()
     }
@@ -102,14 +109,27 @@ final class PlayerViewModel: ObservableObject {
         selectedPlaylist = source
 
         if isDirectPlaybackSource(source.url) {
+            let drmConfiguration: DRMConfiguration?
+
+            if source.name == "Axinom DRM Test" {
+                drmConfiguration = DRMConfiguration(
+                    certificateURL: URL(string: "https://example.com/certificate")!,
+                    licenseURL: URL(string: "https://drm-fairplay-licensing.axprod.net/AcquireLicense")!
+                )
+            } else {
+                drmConfiguration = nil
+            }
+
             let directChannel = Channel(
                 name: source.name,
                 url: source.url,
-                drmConfiguration: nil
+                drmConfiguration: drmConfiguration
             )
 
             channels = [directChannel]
             selectedChannel = directChannel
+            selectChannel(directChannel)
+            
             return
         }
 

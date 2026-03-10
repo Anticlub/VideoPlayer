@@ -21,6 +21,7 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     }
     
     func prepare(asset: AVURLAsset) {
+        print("DRMManager: preparing FairPlay DRM")
         asset.resourceLoader.setDelegate(
             self,
             queue: DispatchQueue(label: "drm.resource.loader"))

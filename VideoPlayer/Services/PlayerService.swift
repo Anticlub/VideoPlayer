@@ -16,6 +16,7 @@ final class PlayerService {
         let asset = AVURLAsset(url: source.url)
         
         if let drm = source.drm {
+            print("PlayService: configuring DRM")
             configureDRM(for: asset, configuration: drm)
         } else {
             drmManager = nil
@@ -49,9 +50,24 @@ final class PlayerService {
     }
     
     private func configureDRM(for asset: AVURLAsset, configuration: DRMConfiguration) {
-//        de momento no implementamos FairPlay, este metodo sera para configurar resourceloader, licencia y certificado
         let manager = DRMManager(configuration: configuration)
         manager.prepare(asset: asset)
         drmManager = manager
+        print("PlayerService.configureDRM called")
+    }
+    
+    func resourceLoader(
+        _ resourceLoader: AVAssetResourceLoader,
+        shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
+    ) -> Bool {
+        print("DRMManager: intercepted FairPlay request")
+        
+        guard let url = loadingRequest.request.url else {
+            print("DRMManager: missing request URL")
+            return false
+        }
+        
+        print("DRMMangaer: resutest URL -> \(url.absoluteString)")
+        return true
     }
 }
