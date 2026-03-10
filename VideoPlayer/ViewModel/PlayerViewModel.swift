@@ -13,6 +13,7 @@ import AVFoundation
 @MainActor
 final class PlayerViewModel: ObservableObject {
     private let playerService = PlayerService()
+    
     var player: AVPlayer? {
         playerService.player
     }
@@ -21,14 +22,9 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var playlistSources: [PlaylistSource]
     @Published private(set) var selectedPlaylist: PlaylistSource?
 
-    // Lista de canales (por ahora mock)
     @Published private(set) var channels: [Channel]
     @Published private(set) var selectedChannel: Channel
 
-    // URL actual que usa el PlayerView
-    @Published private(set) var url: URL
-
-    // Forzar a SwiftUI a recrear el player
     @Published private(set) var playerInstanceID = UUID()
 
     init() {
@@ -40,7 +36,7 @@ final class PlayerViewModel: ObservableObject {
             ),
             PlaylistSource(
                 name: "Dibujos",
-                url: URL(string: "https://mametchikitty.github.io/Listas-IPTV/dibujos-animados.m3u")!,
+                url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Clear/Manifest_1080p.m3u8")!,
                 kind: .vod
             ),
         
@@ -51,12 +47,15 @@ final class PlayerViewModel: ObservableObject {
         
         let fallbackChannel = Channel(
             name: "Apple BipBop",
-            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
+            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!,
+            drmConfiguration: DRMConfiguration(
+                certificateURL: URL(string: "https://example.com/license")!,
+                licenseURL: URL(string: "https://example.com/license")!
+            )
         )
         
         self.channels = [fallbackChannel]
         self.selectedChannel = fallbackChannel
-        self.url = fallbackChannel.url
         self.state = .loading
     }
 
@@ -65,10 +64,18 @@ final class PlayerViewModel: ObservableObject {
     func setError(_ message: String) { state = .error(message) }
 
     func selectChannel(_ channel: Channel) {
-        guard channel.id != selectedChannel.id else { return }
-        
+        if channel.id == selectedChannel.id, player != nil {
+            return
+        }
+
         selectedChannel = channel
-        playerService.load(url: channel.url)
+
+        let source = PlaybackSource(
+            url: channel.url,
+            drm: channel.drmConfiguration
+        )
+
+        playerService.load(source: source)
         playerInstanceID = UUID()
     }
 
@@ -86,7 +93,6 @@ final class PlayerViewModel: ObservableObject {
             
             channels = parsed
             selectedChannel = parsed[0]
-            self.url = parsed[0].url
         } catch {
             setError("No se pudo cargar la playlist: \(error.localizedDescription)")
         }
@@ -94,6 +100,19 @@ final class PlayerViewModel: ObservableObject {
     
     func selectPlaylist(_ source: PlaylistSource) async {
         selectedPlaylist = source
+
+        if isDirectPlaybackSource(source.url) {
+            let directChannel = Channel(
+                name: source.name,
+                url: source.url,
+                drmConfiguration: nil
+            )
+
+            channels = [directChannel]
+            selectedChannel = directChannel
+            return
+        }
+
         await loadPlaylist(from: source.url)
     }
     
@@ -101,9 +120,6 @@ final class PlayerViewModel: ObservableObject {
         playerService.togglePlayPause()
     }
     
-    func loadChannel(url: URL) {
-        playerService.load(url: url)
-    }
     
     func nextChannel() {
         guard let idx = channels.firstIndex(where: { $0.id == selectedChannel.id}) else { return }
@@ -121,4 +137,8 @@ final class PlayerViewModel: ObservableObject {
         playerService.stop()
     }
     
+    private func isDirectPlaybackSource(_ url: URL) -> Bool {
+        let lastPath = url.lastPathComponent.lowercased()
+        return lastPath.contains("manifest")
+    }
 }
