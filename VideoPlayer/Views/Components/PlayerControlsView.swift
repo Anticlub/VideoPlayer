@@ -58,6 +58,6 @@ struct PlayerControlsView: View {
         }
     }
 
-    // Namespace para prefersDefaultFocus
+
     @Namespace private var focusNamespace
 }

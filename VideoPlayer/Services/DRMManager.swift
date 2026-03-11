@@ -32,6 +32,7 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         _ resourceLoader: AVAssetResourceLoader,
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
+        print("resourceLoader entered")
         guard let url = loadingRequest.request.url else {
             print("DRMManager: missing request URL")
             return false

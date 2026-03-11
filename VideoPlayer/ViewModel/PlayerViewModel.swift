@@ -56,7 +56,7 @@ final class PlayerViewModel: ObservableObject {
             url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!,
             drmConfiguration: nil
         )
-        
+
         self.channels = [fallbackChannel]
         self.selectedChannel = fallbackChannel
         self.state = .loading
@@ -78,8 +78,6 @@ final class PlayerViewModel: ObservableObject {
             drm: channel.drmConfiguration
         )
 
-//        print("PlayerService.load -> url: \(source.url.absoluteString)")
-//        print("PlayerService.load -> drm: \(String(describing: source.drm))")
         playerService.load(source: source)
         playerInstanceID = UUID()
     }
@@ -89,15 +87,16 @@ final class PlayerViewModel: ObservableObject {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             guard let text = String(data: data, encoding: .utf8) else { return }
-            
+
             let parsed = M3UParser.parse(text)
             guard !parsed.isEmpty else {
                 setError("No se encontraron canales en la playlist")
                 return
             }
-            
-            channels = parsed
-            selectedChannel = parsed[0]
+
+            channels = [makeFairPlayTestChannel()] + parsed
+            selectedChannel = channels[0]
+
         } catch {
             setError("No se pudo cargar la playlist: \(error.localizedDescription)")
         }
@@ -159,5 +158,24 @@ final class PlayerViewModel: ObservableObject {
         return lastPath.contains("manifest")
             || lastPath.contains("playlist")
             || lastPath.contains("index")
+    }
+    
+    private func makeFairPlayTestChannel() -> Channel {
+        Channel(
+            name: "EZDRM FairPlay Test",
+            url: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm.m3u8")!,
+            drmConfiguration: DRMConfiguration(
+                certificateURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm.cer")!,
+                licenseURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm")!,
+                headers: [:],
+                queryItems: [],
+                contentIdentifierOverride: nil
+            )
+        )
+    }
+    
+    func loadInitialPlaylist() async {
+        guard let initialSource = selectedPlaylist else { return }
+        await loadPlaylist(from: initialSource.url)
     }
 }

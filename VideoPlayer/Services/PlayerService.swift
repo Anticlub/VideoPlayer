@@ -6,6 +6,9 @@
 //
 
 import AVFoundation
+import os
+
+private let logger = Logger(subsystem: "VideoPlayer", category: "PlayerService")
 
 final class PlayerService {
     
@@ -13,10 +16,11 @@ final class PlayerService {
     private var drmManager: DRMManager?
     
     func load(source: PlaybackSource) {
+        logger.info("Loading playback source")
         let asset = AVURLAsset(url: source.url)
         
         if let drm = source.drm {
-            print("PlayService: configuring DRM")
+            logger.info("DRM configuration detected")
             configureDRM(for: asset, configuration: drm)
         } else {
             drmManager = nil
@@ -27,10 +31,12 @@ final class PlayerService {
     }
     
     func play() {
-        player?.play() 
+        logger.debug("Play")
+        player?.play()
     }
     
     func pause() {
+        logger.debug("Pause")
         player?.pause()
     }
     
@@ -38,36 +44,27 @@ final class PlayerService {
         guard let player else { return }
         
         if player.timeControlStatus == .playing {
+            logger.debug("Toggle -> pause")
             player.pause()
         } else {
+            logger.debug("Toggle -> play")
             player.play()
         }
     }
     
     func stop() {
+        logger.info("Stop playback")
         player?.pause()
         player = nil
+        drmManager = nil
     }
     
     private func configureDRM(for asset: AVURLAsset, configuration: DRMConfiguration) {
+        logger.info("Configuring FairPlay DRM")
+
         let manager = DRMManager(configuration: configuration)
         manager.prepare(asset: asset)
         drmManager = manager
-        print("PlayerService.configureDRM called")
     }
     
-    func resourceLoader(
-        _ resourceLoader: AVAssetResourceLoader,
-        shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
-    ) -> Bool {
-        print("DRMManager: intercepted FairPlay request")
-        
-        guard let url = loadingRequest.request.url else {
-            print("DRMManager: missing request URL")
-            return false
-        }
-        
-        print("DRMMangaer: resutest URL -> \(url.absoluteString)")
-        return true
-    }
 }

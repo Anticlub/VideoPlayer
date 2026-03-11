@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var playlistURL = URL(string: "https://www.tdtchannels.com/lists/tv_mpd.m3u8")!
     @StateObject private var vm = PlayerViewModel()
     @State private var showChannelBar = true
     @State private var hasSelectedChannel = false
@@ -28,127 +27,21 @@ struct ContentView: View {
     
     var body: some View {
         ZStack(alignment: .top) {
-            
-            if hasSelectedChannel {
-                PlayerView(player: vm.player, state: $vm.state, showsPlaybackControls: !showControls || showChannelBar)
-                    .id(vm.playerInstanceID)
-                    .ignoresSafeArea()
-            } else {
-                Color.black.ignoresSafeArea()
-            }
-            
+
+            playerLayer
+
             if showChannelBar {
-                VStack(alignment: .leading, spacing: 18) {
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 18) {
-                            ForEach(vm.playlistSources) { source in
-                                Button {
-                                    Task {
-                                        await vm.selectPlaylist(source)
-                                    }
-                                } label: {
-                                    Text("\(source.kind.rawValue): \(source.name)")
-                                }
-                                .buttonStyle(.bordered)
-                            }
-                        }
-                        .padding(.horizontal, 40)
-                    }
-                    .frame(height: 100)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 70) {
-                            ForEach(vm.channels) { channel in
-                                Button {
-                                    vm.selectChannel(channel)
-                                    hasSelectedChannel = true
-                                    showChannelBar = false
-                                } label: {
-                                    VStack(spacing: 10) {
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 18)
-                                                .fill(.black.opacity(0.35))
-
-                                            if let logoURL = channel.logoURL {
-                                                AsyncImage(url: logoURL) { phase in
-                                                    switch phase {
-                                                    case .empty:
-                                                        ProgressView()
-                                                    case .success(let image):
-                                                        image
-                                                            .resizable()
-                                                            .scaledToFit()
-                                                            .padding(18)
-                                                    case .failure:
-                                                        Image(systemName: "tv")
-                                                            .font(.system(size: 34))
-                                                            .foregroundStyle(.white.opacity(0.7))
-                                                    @unknown default:
-                                                        EmptyView()
-                                                    }
-                                                }
-                                            } else {
-                                                Image(systemName: "tv")
-                                                    .font(.system(size: 34))
-                                                    .foregroundStyle(.white.opacity(0.7))
-                                            }
-
-                                            RoundedRectangle(cornerRadius: 18)
-                                                .stroke(
-                                                    focusedCardID == channel.id ? .white.opacity(0.9) : .clear,
-                                                    lineWidth: 3
-                                                )
-                                        }
-                                        .frame(width: 260, height: 150)
-                                        .shadow(radius: focusedCardID == channel.id ? 16 : 6)
-
-                                        Text(channel.name)
-                                            .font(.caption)
-                                            .lineLimit(2)
-                                            .multilineTextAlignment(.center)
-                                            .frame(width: 260)
-                                    }
-                                    .scaleEffect(focusedCardID == channel.id ? 1.12 : 1.0)
-                                    .animation(.easeInOut(duration: 0.15), value: focusedCardID)
-                                }
-                                .buttonStyle(.glass)
-                                .focused($focusedCardID, equals: channel.id)
-                            }
-                        }
-                        .padding(.horizontal, 40)
-                        .padding(.vertical, 22)
-                    }
-                    .frame(height: 260)
-                }
-                .padding(.top, 30)
-                .transition(.opacity)
+                channelSelectionLayer
             }
-            
+
             if hasSelectedChannel && !showChannelBar && showControls {
-                VStack {
-                    Spacer()
-                    
-                    PlayerControlsView(
-                        onPrevious: vm.previousChannel,
-                        onPlayPause: vm.playPause,
-                        onNext: vm.nextChannel,
-                        onStop: {
-                            vm.stop()
-                            showControls = false
-                            showChannelBar = true
-                        }
-                    )
-                    .padding(.bottom, 140)
-                }
-                .zIndex(50)
-                .transition(.opacity)
+                controlsLayer
             }
-            
+
             overlayView
         }
         .task {
-            await vm.loadPlaylist(from: playlistURL)
+            await vm.loadInitialPlaylist()
         }
         .onChange(of: showChannelBar) { _, isShown in
             if isShown {
@@ -180,21 +73,64 @@ struct ContentView: View {
     @ViewBuilder
     private var overlayView: some View {
         if case .error(let message) = vm.state {
-            VStack(spacing: 12) {
-                Text("Error de reproducción")
-                    .font(.headline)
-
-                Text(message)
-                    .font(.footnote)
-                    .multilineTextAlignment(.center)
-            }
-            .padding()
-            .background(.black.opacity(0.7))
-            .cornerRadius(12)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.black.opacity(0.35))
+            PlaybackErrorOverlayView(message: message)
         } else {
             EmptyView()
         }
+    }
+    
+    private var playerLayer: some View {
+        Group {
+            if hasSelectedChannel {
+                PlayerView(
+                    player: vm.player,
+                    state: $vm.state,
+                    showsPlaybackControls: !showControls || showChannelBar
+                )
+                .id(vm.playerInstanceID)
+                .ignoresSafeArea()
+            } else {
+                Color.black.ignoresSafeArea()
+            }
+        }
+    }
+    
+    private var channelSelectionLayer: some View {
+        ChannelSelectionOverlayView(
+            playlistSources: vm.playlistSources,
+            channels: vm.channels,
+            focusedCardID: focusedCardID,
+            focusBinding: $focusedCardID,
+            onSelectPlaylist: { source in
+                Task {
+                    await vm.selectPlaylist(source)
+                }
+            },
+            onSelectChannel: { channel in
+                vm.selectChannel(channel)
+                hasSelectedChannel = true
+                showChannelBar = false
+            }
+        )
+    }
+    
+    private var controlsLayer: some View {
+        VStack {
+            Spacer()
+
+            PlayerControlsView(
+                onPrevious: vm.previousChannel,
+                onPlayPause: vm.playPause,
+                onNext: vm.nextChannel,
+                onStop: {
+                    vm.stop()
+                    showControls = false
+                    showChannelBar = true
+                }
+            )
+            .padding(.bottom, 140)
+        }
+        .zIndex(50)
+        .transition(.opacity)
     }
 }
