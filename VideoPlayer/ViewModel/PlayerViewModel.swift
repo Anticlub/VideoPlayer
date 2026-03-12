@@ -35,10 +35,16 @@ final class PlayerViewModel: ObservableObject {
                 kind: .live
             ),
             PlaylistSource(
-                name: "Dibujos",
+                name: "Axinom DRM Clear",
                 url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Clear/Manifest_1080p.m3u8")!,
                 kind: .vod
             ),
+            PlaylistSource(
+                name: "Axinom DRM Test",
+                url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Encrypted_Cbcs/Manifest_1080p.m3u8")!,
+                kind: .vod
+            ),
+            
         
         ]
 
@@ -47,18 +53,14 @@ final class PlayerViewModel: ObservableObject {
         
         let fallbackChannel = Channel(
             name: "Apple BipBop",
-            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!,
-            drmConfiguration: DRMConfiguration(
-                certificateURL: URL(string: "https://example.com/license")!,
-                licenseURL: URL(string: "https://example.com/license")!
-            )
+            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
         )
-        
+
         self.channels = [fallbackChannel]
         self.selectedChannel = fallbackChannel
         self.state = .loading
     }
-
+    
     func setLoading() { state = .loading }
     func setPlaying() { state = .playing }
     func setError(_ message: String) { state = .error(message) }
@@ -69,7 +71,7 @@ final class PlayerViewModel: ObservableObject {
         }
 
         selectedChannel = channel
-
+        
         let source = PlaybackSource(
             url: channel.url,
             drm: channel.drmConfiguration
@@ -78,38 +80,40 @@ final class PlayerViewModel: ObservableObject {
         playerService.load(source: source)
         playerInstanceID = UUID()
     }
-
     
     func loadPlaylist(from url: URL) async {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             guard let text = String(data: data, encoding: .utf8) else { return }
-            
+
             let parsed = M3UParser.parse(text)
             guard !parsed.isEmpty else {
                 setError("No se encontraron canales en la playlist")
                 return
             }
-            
-            channels = parsed
-            selectedChannel = parsed[0]
+
+            channels = [makeFairPlayTestChannel()] + parsed
+            selectedChannel = channels[0]
+
         } catch {
             setError("No se pudo cargar la playlist: \(error.localizedDescription)")
         }
+    }
+    
+    func loadInitialPlaylist() async {
+        guard let initialSource = selectedPlaylist else { return }
+        await loadPlaylist(from: initialSource.url)
     }
     
     func selectPlaylist(_ source: PlaylistSource) async {
         selectedPlaylist = source
 
         if isDirectPlaybackSource(source.url) {
-            let directChannel = Channel(
-                name: source.name,
-                url: source.url,
-                drmConfiguration: nil
-            )
+            let directChannel = makeDirectChannel(from: source)
 
             channels = [directChannel]
             selectedChannel = directChannel
+            selectChannel(directChannel)
             return
         }
 
@@ -119,7 +123,6 @@ final class PlayerViewModel: ObservableObject {
     func playPause() {
         playerService.togglePlayPause()
     }
-    
     
     func nextChannel() {
         guard let idx = channels.firstIndex(where: { $0.id == selectedChannel.id}) else { return }
@@ -137,8 +140,44 @@ final class PlayerViewModel: ObservableObject {
         playerService.stop()
     }
     
+    private func drmConfiguration(for source: PlaylistSource) -> DRMConfiguration? {
+        
+        if source.name == "Axinom DRM Test" {
+            return DRMConfiguration(
+                certificateURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm.cer")!,
+                licenseURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm")!
+            )
+        }
+        
+        return nil
+    }
+    
+    private func makeDirectChannel(from source: PlaylistSource) -> Channel {
+        Channel(
+            name: source.name,
+            url: source.url,
+            drmConfiguration: drmConfiguration(for: source)
+        )
+    }
+    
+    private func makeFairPlayTestChannel() -> Channel {
+        Channel(
+            name: "EZDRM FairPlay Test",
+            url: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm.m3u8")!,
+            drmConfiguration: DRMConfiguration(
+                certificateURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm.cer")!,
+                licenseURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm")!,
+                headers: [:],
+                queryItems: [],
+                contentIdentifierOverride: nil
+            )
+        )
+    }
+    
     private func isDirectPlaybackSource(_ url: URL) -> Bool {
         let lastPath = url.lastPathComponent.lowercased()
         return lastPath.contains("manifest")
+            || lastPath.contains("playlist")
+            || lastPath.contains("index")
     }
 }

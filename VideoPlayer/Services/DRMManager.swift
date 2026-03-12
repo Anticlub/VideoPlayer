@@ -6,11 +6,15 @@
 //
 
 import AVFoundation
+import os
+
+private let logger = Logger(subsystem: "VideoPlayer", category: "DRM")
 
 final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     
     enum DRMError: Error {
         case invalidContentIdentifier
+        case invalidLicenseURL
     }
     
     private let configuration: DRMConfiguration
@@ -21,6 +25,7 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     }
     
     func prepare(asset: AVURLAsset) {
+        logger.info("Preparing FairPlay DRM")
         asset.resourceLoader.setDelegate(
             self,
             queue: DispatchQueue(label: "drm.resource.loader"))
@@ -30,56 +35,55 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         _ resourceLoader: AVAssetResourceLoader,
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
+        logger.info("FairPlay request received")
         guard let url = loadingRequest.request.url else {
+            logger.error("Missing resource loading request URL")
             return false
         }
-
-        print("Resource request URL: \(url.absoluteString)")
-
+        
         guard url.scheme == "skd" else {
-            print("La petición no es DRM (no es skd://)")
             return false
         }
-
-        print("🔐 DRM request detectada (skd://)")
-
+        
+        logger.info("DRM key request detected")
+        
         Task {
             do {
-
+                
                 guard let contentIdentifier = contentIdentifier(from: url) else {
                     throw DRMError.invalidContentIdentifier
                 }
-
+                
                 let certificate = try await fetchCertificate(
                     from: configuration.certificateURL
                 )
-
+                
                 let spc = try makeSPC(
                     loadingRequest: loadingRequest,
                     certificate: certificate,
                     contentIdentifier: contentIdentifier
                 )
-
-                print("✅ SPC generado")
-
+                
+                logger.info("SPC generated")
+                
                 let ckc = try await requestCKC(
                     spc: spc,
-                    licenseURL: configuration.licenseURL
+                    configuration: configuration
                 )
-
-                print("✅ CKC recibido")
-
+                
+                logger.info("CKC received")
+                
                 loadingRequest.dataRequest?.respond(with: ckc)
                 loadingRequest.finishLoading()
-
+                
             } catch {
 
-                print("❌ DRM error:", error.localizedDescription)
+                logger.error("FairPlay flow failed: \(error.localizedDescription)")
                 loadingRequest.finishLoading(with: error)
-
+                
             }
         }
-
+        
         return true
     }
     
@@ -89,8 +93,13 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     }
     
     private func contentIdentifier(from url: URL) -> Data? {
-        guard let host = url.host else { return nil }
-        return host.data(using: .utf8)
+        if let override = configuration.contentIdentifierOverride {
+            return override.data(using: .utf8)
+        }
+        
+        let identifier = url.absoluteString
+            .replacingOccurrences(of: "skd://", with: "")
+        return identifier.data(using: .utf8)
     }
     
     private func makeSPC(
@@ -106,17 +115,36 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     
     private func requestCKC(
         spc: Data,
-        licenseURL: URL
+        configuration: DRMConfiguration
     ) async throws -> Data {
         
-        var request = URLRequest(url: licenseURL)
+        var components = URLComponents(url: configuration.licenseURL, resolvingAgainstBaseURL: false)
+        
+        if !configuration.queryItems.isEmpty {
+            var items = components?.queryItems ?? []
+            items.append(contentsOf: configuration.queryItems)
+            components?.queryItems = items
+        }
+        
+        guard let finalURL = components?.url else {
+            throw DRMError.invalidLicenseURL
+        }
+        
+        var request = URLRequest(url: finalURL)
         request.httpMethod = "POST"
         request.httpBody = spc
         request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
         
-        let (data, _) = try await URLSession.shared.data(for: request)
+        for (key, value) in configuration.headers {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            print("CKC response status: \(httpResponse.statusCode)")
+        }
         
         return data
     }
-    
 }

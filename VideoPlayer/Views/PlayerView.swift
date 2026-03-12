@@ -24,6 +24,16 @@ struct PlayerView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: AVPlayerViewController, context: Context) {
+        if uiViewController.player !== player {
+            context.coordinator.detachPlayer()
+            uiViewController.player = player
+
+            if let player {
+                context.coordinator.attachPlayer(player)
+                player.play()
+            }
+        }
+
         uiViewController.showsPlaybackControls = showsPlaybackControls
     }
 
