@@ -6,6 +6,9 @@
 //
 
 import AVFoundation
+import os
+
+private let logger = Logger(subsystem: "VideoPlayer", category: "DRM")
 
 final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     
@@ -22,7 +25,7 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     }
     
     func prepare(asset: AVURLAsset) {
-        print("DRMManager: preparing FairPlay DRM")
+        logger.info("Preparing FairPlay DRM")
         asset.resourceLoader.setDelegate(
             self,
             queue: DispatchQueue(label: "drm.resource.loader"))
@@ -32,20 +35,17 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         _ resourceLoader: AVAssetResourceLoader,
         shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest
     ) -> Bool {
-        print("resourceLoader entered")
+        logger.info("FairPlay request received")
         guard let url = loadingRequest.request.url else {
-            print("DRMManager: missing request URL")
+            logger.error("Missing resource loading request URL")
             return false
         }
-        
-        print("Resource request URL: \(url.absoluteString)")
         
         guard url.scheme == "skd" else {
-            print("La petición no es DRM (no es skd://)")
             return false
         }
         
-        print("🔐 DRM request detectada (skd://)")
+        logger.info("DRM key request detected")
         
         Task {
             do {
@@ -64,22 +64,21 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
                     contentIdentifier: contentIdentifier
                 )
                 
-                print("✅ SPC generado")
+                logger.info("SPC generated")
                 
                 let ckc = try await requestCKC(
                     spc: spc,
                     configuration: configuration
                 )
                 
-                print("✅ CKC recibido")
+                logger.info("CKC received")
                 
                 loadingRequest.dataRequest?.respond(with: ckc)
                 loadingRequest.finishLoading()
                 
-                print("DRMManager: loadingRequest finished successfully")
             } catch {
-                
-                print("❌ DRM error:", error.localizedDescription)
+
+                logger.error("FairPlay flow failed: \(error.localizedDescription)")
                 loadingRequest.finishLoading(with: error)
                 
             }
@@ -89,7 +88,6 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     }
     
     private func fetchCertificate(from url: URL) async throws -> Data {
-        print("Fetching certificate from: \(url.absoluteString)")
         let (data, _) = try await URLSession.shared.data(from: url)
         return data
     }
@@ -119,7 +117,6 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         spc: Data,
         configuration: DRMConfiguration
     ) async throws -> Data {
-        print("Requesting CKC from: \(configuration.licenseURL.absoluteString)")
         
         var components = URLComponents(url: configuration.licenseURL, resolvingAgainstBaseURL: false)
         
