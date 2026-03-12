@@ -53,15 +53,14 @@ final class PlayerViewModel: ObservableObject {
         
         let fallbackChannel = Channel(
             name: "Apple BipBop",
-            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!,
-            drmConfiguration: nil
+            url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
         )
 
         self.channels = [fallbackChannel]
         self.selectedChannel = fallbackChannel
         self.state = .loading
     }
-
+    
     func setLoading() { state = .loading }
     func setPlaying() { state = .playing }
     func setError(_ message: String) { state = .error(message) }
@@ -81,7 +80,6 @@ final class PlayerViewModel: ObservableObject {
         playerService.load(source: source)
         playerInstanceID = UUID()
     }
-
     
     func loadPlaylist(from url: URL) async {
         do {
@@ -102,26 +100,16 @@ final class PlayerViewModel: ObservableObject {
         }
     }
     
+    func loadInitialPlaylist() async {
+        guard let initialSource = selectedPlaylist else { return }
+        await loadPlaylist(from: initialSource.url)
+    }
+    
     func selectPlaylist(_ source: PlaylistSource) async {
         selectedPlaylist = source
 
         if isDirectPlaybackSource(source.url) {
-            let drmConfiguration: DRMConfiguration?
-
-            if source.name == "Axinom FairPlay Test" {
-                drmConfiguration = DRMConfiguration(
-                    certificateURL: URL(string: "https://drm-fairplay-licensing.axprod.net/AcquireLicense")!,
-                    licenseURL: URL(string: "https://drm-fairplay-licensing.axprod.net/AcquireLicense")!
-                )
-            } else {
-                drmConfiguration = nil
-            }
-
-            let directChannel = Channel(
-                name: source.name,
-                url: source.url,
-                drmConfiguration: drmConfiguration
-            )
+            let directChannel = makeDirectChannel(from: source)
 
             channels = [directChannel]
             selectedChannel = directChannel
@@ -135,7 +123,6 @@ final class PlayerViewModel: ObservableObject {
     func playPause() {
         playerService.togglePlayPause()
     }
-    
     
     func nextChannel() {
         guard let idx = channels.firstIndex(where: { $0.id == selectedChannel.id}) else { return }
@@ -153,11 +140,24 @@ final class PlayerViewModel: ObservableObject {
         playerService.stop()
     }
     
-    private func isDirectPlaybackSource(_ url: URL) -> Bool {
-        let lastPath = url.lastPathComponent.lowercased()
-        return lastPath.contains("manifest")
-            || lastPath.contains("playlist")
-            || lastPath.contains("index")
+    private func drmConfiguration(for source: PlaylistSource) -> DRMConfiguration? {
+        
+        if source.name == "Axinom DRM Test" {
+            return DRMConfiguration(
+                certificateURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm.cer")!,
+                licenseURL: URL(string: "https://fps.ezdrm.com/demo/video/ezdrm")!
+            )
+        }
+        
+        return nil
+    }
+    
+    private func makeDirectChannel(from source: PlaylistSource) -> Channel {
+        Channel(
+            name: source.name,
+            url: source.url,
+            drmConfiguration: drmConfiguration(for: source)
+        )
     }
     
     private func makeFairPlayTestChannel() -> Channel {
@@ -174,8 +174,10 @@ final class PlayerViewModel: ObservableObject {
         )
     }
     
-    func loadInitialPlaylist() async {
-        guard let initialSource = selectedPlaylist else { return }
-        await loadPlaylist(from: initialSource.url)
+    private func isDirectPlaybackSource(_ url: URL) -> Bool {
+        let lastPath = url.lastPathComponent.lowercased()
+        return lastPath.contains("manifest")
+            || lastPath.contains("playlist")
+            || lastPath.contains("index")
     }
 }
