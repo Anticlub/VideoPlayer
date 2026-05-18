@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var vm = PlayerViewModel()
+    @StateObject private var vm = PlayerViewModel(playerService: PlayerService())
     @State private var showChannelBar = true
     @State private var hasSelectedChannel = false
     @FocusState private var focusedCardID: UUID?
