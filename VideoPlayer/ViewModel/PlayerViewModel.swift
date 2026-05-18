@@ -12,7 +12,7 @@ import AVFoundation
 
 @MainActor
 final class PlayerViewModel: ObservableObject {
-    private let playerService = PlayerService()
+    private let playerService : PlayerServiceProtocol
     
     var player: AVPlayer? {
         playerService.player
@@ -27,7 +27,8 @@ final class PlayerViewModel: ObservableObject {
 
     @Published private(set) var playerInstanceID = UUID()
 
-    init() {
+    init(playerService: PlayerServiceProtocol) {
+        self.playerService = playerService
         let sources: [PlaylistSource] = [
             PlaylistSource(
                 name: "España (Live)",
