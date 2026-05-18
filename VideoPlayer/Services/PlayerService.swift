@@ -10,7 +10,7 @@ import os
 
 private let logger = Logger(subsystem: "VideoPlayer", category: "PlayerService")
 
-final class PlayerService {
+final class PlayerService : PlayerServiceProtocol {
     
     private(set) var player: AVPlayer?
     private var drmManager: DRMManager?
