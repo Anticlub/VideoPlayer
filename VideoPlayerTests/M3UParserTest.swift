@@ -20,13 +20,11 @@ import Foundation
     #expect(channels[0].name == "Canal Test")
 }
 
-// TODO: M3UParser acepta texto inválido como URL válida.
-// Arreglar parser para verificar que existe #EXTINF previo antes de crear un canal.
-/*@Test @MainActor func m3uParser_withInvalidText_returnsEmptyArray() async throws {
+@Test @MainActor func m3uParser_withInvalidText_returnsEmptyArray() async throws {
     let m3uText = "This is not a valid M3U file."
     let channels = M3UParser.parse(m3uText)
     #expect(channels.isEmpty)
-}*/
+}
 
 @Test @MainActor func m3uParser_withEmptyText_returnsEmptyArray() async throws {
     let m3uText = ""
