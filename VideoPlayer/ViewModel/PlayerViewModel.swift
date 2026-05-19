@@ -27,7 +27,7 @@ final class PlayerViewModel: ObservableObject {
 
     @Published private(set) var playerInstanceID = UUID()
 
-    init(playerService: PlayerServiceProtocol) {
+    init(playerService: PlayerServiceProtocol, initialChannels: [Channel]? = nil) {
         self.playerService = playerService
         let sources: [PlaylistSource] = [
             PlaylistSource(
@@ -57,8 +57,9 @@ final class PlayerViewModel: ObservableObject {
             url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
         )
 
-        self.channels = [fallbackChannel]
-        self.selectedChannel = fallbackChannel
+        let resolvedCahannels = initialChannels ?? [fallbackChannel]
+        self.channels = resolvedCahannels
+        self.selectedChannel = resolvedCahannels.first ?? fallbackChannel
         self.state = .loading
     }
     
