@@ -34,3 +34,22 @@ import Foundation
 }
 
 // TODO: testear nextChannel y previousChannel una vez que se refactorice PlayerViewModel para permitir inyectar canales
+@Test @MainActor func nextChannel_shouldSelectNextChannel() throws {
+    let mock = MockPlayerService()
+    let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
+    let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
+    let player = PlayerViewModel(playerService: mock, initialChannels: [channel1, channel2])
+    player.nextChannel()
+    #expect(player.selectedChannel.name == "Canal 2")
+}
+
+@Test @MainActor func previousChannel_shouldSelectPreviousChannel() throws {
+    let mock = MockPlayerService()
+    let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
+    let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
+    let player = PlayerViewModel(playerService: mock, initialChannels: [channel1, channel2])
+    player.nextChannel()
+    #expect(player.selectedChannel.name == "Canal 2")
+    player.previousChannel()
+    #expect(player.selectedChannel.name == "Canal 1")
+}
