@@ -48,10 +48,13 @@ enum M3UParser {
             
             if line.hasPrefix("#") { continue }
             
-            if let url = URL(string: line) {
-                let name = pendingName ?? url.host ?? "Canal"
-                channels.append(Channel(name: name, url: url, logoURL: pendingLogoURL, groupTitle: pendingGroupTitle))
+            if line.hasPrefix("http") {
+                if let url = URL(string: line) {
+                    let name = pendingName ?? url.host ?? "Canal"
+                    channels.append(Channel(name: name, url: url, logoURL: pendingLogoURL, groupTitle: pendingGroupTitle))
+                }
             }
+            
             pendingName = nil
             pendingLogoURL = nil
             pendingGroupTitle = nil
