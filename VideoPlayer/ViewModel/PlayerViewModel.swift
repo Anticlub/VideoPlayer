@@ -32,17 +32,17 @@ final class PlayerViewModel: ObservableObject {
         let sources: [PlaylistSource] = [
             PlaylistSource(
                 name: "España (Live)",
-                url: URL(string: "https://www.tdtchannels.com/lists/tv_mpd.m3u8")!,
+                url: Constants.Streams.tdtSpain,
                 kind: .live
             ),
             PlaylistSource(
                 name: "Axinom DRM Clear",
-                url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Clear/Manifest_1080p.m3u8")!,
+                url: Constants.Streams.axinomDrmClear,
                 kind: .vod
             ),
             PlaylistSource(
                 name: "Axinom DRM Test",
-                url: URL(string: "https://media.axprod.net/TestVectors/v9-MultiFormat/Encrypted_Cbcs/Manifest_1080p.m3u8")!,
+                url: Constants.Streams.axinomDrmTest,
                 kind: .vod
             ),
             
