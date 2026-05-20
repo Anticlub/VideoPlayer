@@ -114,7 +114,6 @@ final class PlayerViewModel: ObservableObject {
             let directChannel = makeDirectChannel(from: source)
 
             channels = [directChannel]
-            selectedChannel = directChannel
             selectChannel(directChannel)
             return
         }
