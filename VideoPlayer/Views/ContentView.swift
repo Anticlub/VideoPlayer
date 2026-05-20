@@ -12,7 +12,6 @@ struct ContentView: View {
     @State private var showChannelBar = true
     @State private var hasSelectedChannel = false
     @FocusState private var focusedCardID: UUID?
-    @State private var showControls = false
     
     private var channelsByGroup: [(group: String, items: [Channel])] {
         
@@ -32,10 +31,6 @@ struct ContentView: View {
 
             if showChannelBar {
                 channelSelectionLayer
-            }
-
-            if hasSelectedChannel && !showChannelBar && showControls {
-                controlsLayer
             }
 
             overlayView
@@ -61,11 +56,9 @@ struct ContentView: View {
         .onExitCommand {
             if showChannelBar {
                 withAnimation(.easeInOut) { showChannelBar = false }
-                showControls = false
                 focusedCardID = nil
             } else {
-                showControls.toggle()
-                showChannelBar = false
+                showChannelBar = true
             }
         }
     }
@@ -84,8 +77,7 @@ struct ContentView: View {
             if hasSelectedChannel {
                 PlayerView(
                     player: vm.player,
-                    state: $vm.state,
-                    showsPlaybackControls: !showControls || showChannelBar
+                    state: $vm.state
                 )
                 .id(vm.playerInstanceID)
                 .ignoresSafeArea()
@@ -114,23 +106,4 @@ struct ContentView: View {
         )
     }
     
-    private var controlsLayer: some View {
-        VStack {
-            Spacer()
-
-            PlayerControlsView(
-                onPrevious: vm.previousChannel,
-                onPlayPause: vm.playPause,
-                onNext: vm.nextChannel,
-                onStop: {
-                    vm.stop()
-                    showControls = false
-                    showChannelBar = true
-                }
-            )
-            .padding(.bottom, 140)
-        }
-        .zIndex(50)
-        .transition(.opacity)
-    }
 }
