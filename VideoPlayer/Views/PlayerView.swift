@@ -4,8 +4,7 @@ import AVKit
 struct PlayerView: UIViewControllerRepresentable {
     let player: AVPlayer?
     @Binding var state: PlayerState
-    let showsPlaybackControls: Bool
-
+    
     func makeCoordinator() -> Coordinator {
         Coordinator(state: $state)
     }
@@ -14,7 +13,7 @@ struct PlayerView: UIViewControllerRepresentable {
         let controller = AVPlayerViewController()
         
         controller.player = player
-        controller.showsPlaybackControls = showsPlaybackControls
+        controller.showsPlaybackControls = true
 
         if let player {
             context.coordinator.attachPlayer(player)
@@ -34,7 +33,7 @@ struct PlayerView: UIViewControllerRepresentable {
             }
         }
 
-        uiViewController.showsPlaybackControls = showsPlaybackControls
+        uiViewController.showsPlaybackControls = true
     }
 
     static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
