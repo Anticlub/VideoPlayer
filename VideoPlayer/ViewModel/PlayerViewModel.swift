@@ -41,7 +41,7 @@ final class PlayerViewModel: ObservableObject {
                 kind: .vod
             ),
             PlaylistSource(
-                name: "Axinom DRM Test",
+                name: "Dibujos",
                 url: Constants.Streams.axinomDrmTest,
                 kind: .vod
             ),
