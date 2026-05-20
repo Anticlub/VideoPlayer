@@ -77,7 +77,8 @@ struct ContentView: View {
             if hasSelectedChannel {
                 PlayerView(
                     player: vm.player,
-                    state: $vm.state
+                    state: $vm.state,
+                    showsPlaybackControls: !showChannelBar
                 )
                 .id(vm.playerInstanceID)
                 .ignoresSafeArea()
