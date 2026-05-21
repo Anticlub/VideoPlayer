@@ -10,6 +10,7 @@ struct PlayerView: UIViewControllerRepresentable {
         Coordinator(state: $state)
     }
 
+    // comentario para prueba
     func makeUIViewController(context: Context) -> AVPlayerViewController {
         let controller = AVPlayerViewController()
         
