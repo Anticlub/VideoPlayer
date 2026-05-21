@@ -41,6 +41,13 @@ struct ContentView: View {
         .onChange(of: showChannelBar) { _, isShown in
             if isShown {
                 focusedCardID = vm.selectedChannel.id
+                if case .error = vm.state {
+
+                } else {
+                    vm.scheduleHideChannelBar {
+                        showChannelBar = false
+                    }
+                }
             } else {
                 focusedCardID = nil
             }
