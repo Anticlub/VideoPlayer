@@ -9,6 +9,7 @@ import SwiftUI
 
 struct PlaybackErrorOverlayView: View {
     let message: String
+    let onTap: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
@@ -24,5 +25,8 @@ struct PlaybackErrorOverlayView: View {
         .cornerRadius(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.black.opacity(0.35))
+        .onTapGesture {
+            onTap()
+        }
     }
 }

@@ -77,7 +77,11 @@ struct ContentView: View {
     @ViewBuilder
     private var overlayView: some View {
         if case .error(let message) = vm.state {
-            PlaybackErrorOverlayView(message: message)
+            PlaybackErrorOverlayView(message: message, onTap: {
+                showChannelBar = true
+                vm.setIdle()
+                }
+            )
         } else {
             EmptyView()
         }

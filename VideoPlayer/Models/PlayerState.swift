@@ -13,4 +13,5 @@ enum PlayerState : Equatable {
     //case stopped
     case loading
     case error(String)
+    case idle
 }

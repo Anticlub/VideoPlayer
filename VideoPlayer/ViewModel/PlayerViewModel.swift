@@ -66,6 +66,7 @@ final class PlayerViewModel: ObservableObject {
     func setLoading() { state = .loading }
     func setPlaying() { state = .playing }
     func setError(_ message: String) { state = .error(message) }
+    func setIdle () { state = .idle }
 
     func selectChannel(_ channel: Channel) {
         if channel.id == selectedChannel.id, player != nil {
