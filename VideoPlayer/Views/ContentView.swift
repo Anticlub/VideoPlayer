@@ -41,6 +41,13 @@ struct ContentView: View {
         .onChange(of: showChannelBar) { _, isShown in
             if isShown {
                 focusedCardID = vm.selectedChannel.id
+                if case .error = vm.state {
+
+                } else {
+                    vm.scheduleHideChannelBar {
+                        showChannelBar = false
+                    }
+                }
             } else {
                 focusedCardID = nil
             }
@@ -53,6 +60,7 @@ struct ContentView: View {
                 }
             }
         }
+        #if os(tvOS)
         .onExitCommand {
             if showChannelBar {
                 withAnimation(.easeInOut) { showChannelBar = false }
@@ -61,12 +69,26 @@ struct ContentView: View {
                 showChannelBar = true
             }
         }
+        #endif
+        #if os(iOS)
+        .gesture(
+            DragGesture().onEnded { value in
+                if value.translation.width > 100 {
+                    showChannelBar = true
+                }
+            }
+        )
+        #endif
     }
     
     @ViewBuilder
     private var overlayView: some View {
         if case .error(let message) = vm.state {
-            PlaybackErrorOverlayView(message: message)
+            PlaybackErrorOverlayView(message: message, onTap: {
+                showChannelBar = true
+                vm.setIdle()
+                }
+            )
         } else {
             EmptyView()
         }

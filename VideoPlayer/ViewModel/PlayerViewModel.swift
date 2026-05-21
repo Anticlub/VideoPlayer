@@ -13,6 +13,7 @@ import AVFoundation
 @MainActor
 final class PlayerViewModel: ObservableObject {
     private let playerService : PlayerServiceProtocol
+    private var hideChannelBarTask: Task<Void, Never>?
     
     var player: AVPlayer? {
         playerService.player
@@ -66,6 +67,7 @@ final class PlayerViewModel: ObservableObject {
     func setLoading() { state = .loading }
     func setPlaying() { state = .playing }
     func setError(_ message: String) { state = .error(message) }
+    func setIdle () { state = .idle }
 
     func selectChannel(_ channel: Channel) {
         if channel.id == selectedChannel.id, player != nil {
@@ -180,5 +182,17 @@ final class PlayerViewModel: ObservableObject {
         return lastPath.contains("manifest")
             || lastPath.contains("playlist")
             || lastPath.contains("index")
+    }
+    
+    func scheduleHideChannelBar(onHide: @escaping () -> Void) {
+        hideChannelBarTask?.cancel()
+        hideChannelBarTask = Task<Void, Never> {
+            do {
+                try await Task.sleep(for: .seconds(5))
+                onHide()
+            } catch {
+                // tarea cancelada, no hacemos nada
+            }
+        }
     }
 }

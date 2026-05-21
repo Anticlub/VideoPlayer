@@ -21,15 +21,18 @@ struct ChannelSelectionOverlayView: View {
                 sources: playlistSources,
                 onSelect: onSelectPlaylist
             )
+            #if os(tvOS)
             .focusSection()
-
+            #endif
             ChannelBarView(
                 channels: channels,
                 focusedCardID: focusedCardID,
                 focusBinding: focusBinding,
                 onSelect: onSelectChannel
             )
+            #if os(tvOS)
             .focusSection()
+            #endif
         }
         .padding(.top, 30)
         .transition(.opacity)
