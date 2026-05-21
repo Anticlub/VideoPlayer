@@ -53,6 +53,7 @@ struct ContentView: View {
                 }
             }
         }
+        #if os(tvOS)
         .onExitCommand {
             if showChannelBar {
                 withAnimation(.easeInOut) { showChannelBar = false }
@@ -61,6 +62,16 @@ struct ContentView: View {
                 showChannelBar = true
             }
         }
+        #endif
+        #if os(iOS)
+        .gesture(
+            DragGesture().onEnded { value in
+                if value.translation.width > 100 {
+                    showChannelBar = true
+                }
+            }
+        )
+        #endif
     }
     
     @ViewBuilder
