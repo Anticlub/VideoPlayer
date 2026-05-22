@@ -51,3 +51,17 @@ import Foundation
     let channels = M3UParser.parse(m3uText)
     #expect(channels[0].logoURL == URL(string: "https://logo.com/logo.png"))
 }
+
+@Test @MainActor func m3uParser_with_multiple_channels() async throws {
+    let m3uText = """
+        #EXTM3U
+        #EXTINF:-1,Canal Test
+        https://test.com/stream
+        #EXTINF:-1,Canal Test 2
+        https://test.com/stream
+        """
+    let channels = M3UParser.parse(m3uText)
+    #expect(channels.count == 2)
+    #expect(channels[0].name == "Canal Test")
+    #expect(channels[1].name == "Canal Test 2")
+}
