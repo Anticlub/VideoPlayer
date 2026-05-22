@@ -82,11 +82,30 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
                 loadingRequest.dataRequest?.respond(with: ckc)
                 loadingRequest.finishLoading()
                 
-            } catch {
-
-                logger.error("FairPlay flow failed: \(error.localizedDescription)")
+            } catch let error as DRMError {
+                switch error {
+                case .invalidContentIdentifier:
+                    logger.error("Invalid content identifier")
+                case .invalidLicenseURL:
+                    logger.error("Invalid license URL")
+                case .certificateFetchFailed(let statusCode):
+                    logger.error("Certificate fetch failed with HTTP \(statusCode)")
+                case .emptyCertificate:
+                    logger.error("Empty certificate")
+                case .spcGenerationFailed:
+                    logger.error("Spc generation failed")
+                case .licenseRequestFailed(let statusCode):
+                    logger.error("License request failed with HTTP \(statusCode)")
+                case .emptyCKC:
+                    logger.error("Empty CKC")
+                case .networkError(let underlyingError):
+                    logger.error("Network error: \(underlyingError.localizedDescription)")
+                }
                 loadingRequest.finishLoading(with: error)
                 
+            } catch {
+                logger.error("FairPlay flow failed: \(error.localizedDescription)")
+                loadingRequest.finishLoading(with: error)
             }
         }
         
