@@ -9,7 +9,7 @@ import Testing
 @testable import VideoPlayer
 import Foundation
 
-@Test @MainActor func m3uParser_withValidText_returnsChannels() async throws {
+@Test @MainActor func m3uParser_withValidText_returnsChannels() {
     let m3uText = """
         #EXTM3U
         #EXTINF:-1,Canal Test
@@ -20,19 +20,19 @@ import Foundation
     #expect(channels[0].name == "Canal Test")
 }
 
-@Test @MainActor func m3uParser_withInvalidText_returnsEmptyArray() async throws {
+@Test @MainActor func m3uParser_withInvalidText_returnsEmptyArray() {
     let m3uText = "This is not a valid M3U file."
     let channels = M3UParser.parse(m3uText)
     #expect(channels.isEmpty)
 }
 
-@Test @MainActor func m3uParser_withEmptyText_returnsEmptyArray() async throws {
+@Test @MainActor func m3uParser_withEmptyText_returnsEmptyArray() {
     let m3uText = ""
     let channels = M3UParser.parse(m3uText)
     #expect(channels.isEmpty)
 }
 
-@Test @MainActor func m3uParser_withTvgGroup_returnsChannelsWithGroup() async throws {
+@Test @MainActor func m3uParser_withTvgGroup_returnsChannelsWithGroup() {
     let m3uText = """
     #EXTM3U
     #EXTINF:-1 group-title="Generalista" ,Canal Test
@@ -42,7 +42,7 @@ import Foundation
     #expect(channels[0].groupTitle == "Generalista")
 }
 
-@Test @MainActor func m3uParser_withTvgLogo_returnsChannelWithLogo() async throws {
+@Test @MainActor func m3uParser_withTvgLogo_returnsChannelWithLogo() {
     let m3uText = """
     #EXTM3U
     #EXTINF:-1 tvg-logo="https://logo.com/logo.png",Canal Test
@@ -52,7 +52,7 @@ import Foundation
     #expect(channels[0].logoURL == URL(string: "https://logo.com/logo.png"))
 }
 
-@Test @MainActor func m3uParser_with_multiple_channels() async throws {
+@Test @MainActor func m3uParser_with_multiple_channels() {
     let m3uText = """
         #EXTM3U
         #EXTINF:-1,Canal Test
@@ -66,7 +66,7 @@ import Foundation
     #expect(channels[1].name == "Canal Test 2")
 }
 
-@Test @MainActor func m3uParser_withEmptyChannelName_returnsDefaultName() async throws {
+@Test @MainActor func m3uParser_withEmptyChannelName_returnsDefaultName() {
     let m3uText = """
         #EXTM3U
         #EXTINF:-1,
@@ -76,7 +76,7 @@ import Foundation
     #expect(channels[0].name == "Canal")
 }
 
-@Test @MainActor func m3uParser_withNonHttpURL_returnsEmptyArray() async throws {
+@Test @MainActor func m3uParser_withNonHttpURL_returnsEmptyArray() {
     let m3uText = """
         #EXTM3U
         #EXTINF:-1, Canal Test
@@ -86,7 +86,7 @@ import Foundation
     #expect(channels.isEmpty)
 }
 
-@Test @MainActor func m3uParser_withMissingURL_returnsEmptyArray() async throws {
+@Test @MainActor func m3uParser_withMissingURL_returnsEmptyArray() {
     let m3uText = """
     #EXTM3U
     #EXTINF:-1 tvg-logo="https://logo.com/logo.png",Canal Test
