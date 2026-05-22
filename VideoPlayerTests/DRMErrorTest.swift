@@ -18,3 +18,13 @@ import Foundation
         Issue.record("Expected certificateFetchFailed")
     }
 }
+
+@Test @MainActor func drmError_licenseRequestFailed_shouldContainStatusCode() {
+    let error = DRMManager.DRMError.licenseRequestFailed(statusCode: 403)
+    
+    if case .licenseRequestFailed(let statusCode) = error {
+        #expect(statusCode == 403)
+    } else {
+        Issue.record("Expected licenseRequestFailed")
+    }
+}
