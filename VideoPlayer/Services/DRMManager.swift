@@ -119,10 +119,11 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         certificate: Data,
         contentIdentifier: Data
     ) throws -> Data {
-        return try loadingRequest.streamingContentKeyRequestData(
-            forApp: certificate,
-            contentIdentifier: contentIdentifier,
-            options: nil)
+        do {
+            return try loadingRequest.streamingContentKeyRequestData(forApp: certificate, contentIdentifier: contentIdentifier)
+        } catch {
+            throw DRMError.spcGenerationFailed
+        }
     }
     
     private func requestCKC(
