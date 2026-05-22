@@ -85,3 +85,12 @@ import Foundation
     let channels = M3UParser.parse(m3uText)
     #expect(channels.isEmpty)
 }
+
+@Test @MainActor func m3uParser_withMissingURL_returnsEmptyArray() async throws {
+    let m3uText = """
+    #EXTM3U
+    #EXTINF:-1 tvg-logo="https://logo.com/logo.png",Canal Test
+    """
+    let channels = M3UParser.parse(m3uText)
+    #expect(channels.isEmpty)
+}
