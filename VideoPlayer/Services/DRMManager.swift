@@ -15,6 +15,12 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     enum DRMError: Error {
         case invalidContentIdentifier
         case invalidLicenseURL
+        case certificateFetchFailed(statusCode: Int)
+        case emptyCertificate
+        case spcGenerationFailed
+        case licenseRequestFailed(statusCode: Int)
+        case emptyCKC
+        case networkError(Error)
     }
     
     private let configuration: DRMConfiguration
