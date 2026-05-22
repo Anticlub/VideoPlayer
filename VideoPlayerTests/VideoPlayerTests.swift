@@ -9,7 +9,7 @@ import Testing
 @testable import VideoPlayer
 import Foundation
 
-@Test @MainActor func selectChannel_shouldCallLoad() throws {
+@Test @MainActor func selectChannel_shouldCallLoad() {
     let mock = MockPlayerService()
     let player = PlayerViewModel(playerService: mock)
     let url = Foundation.URL(string: "https://test.com")
@@ -19,14 +19,14 @@ import Foundation
     
 }
 
-@Test @MainActor func stop_shouldCallStop() throws {
+@Test @MainActor func stop_shouldCallStop() {
     let mock = MockPlayerService()
     let player = PlayerViewModel(playerService: mock)
     player.stop()
     #expect(mock.stopWasCalled == true)
 }
 
-@Test @MainActor func playPause_shouldCallTogglePlayPause() throws {
+@Test @MainActor func playPause_shouldCallTogglePlayPause() {
     let mock = MockPlayerService()
     let player = PlayerViewModel(playerService: mock)
     player.playPause()
@@ -34,7 +34,7 @@ import Foundation
 }
 
 // TODO: testear nextChannel y previousChannel una vez que se refactorice PlayerViewModel para permitir inyectar canales
-@Test @MainActor func nextChannel_shouldSelectNextChannel() throws {
+@Test @MainActor func nextChannel_shouldSelectNextChannel() {
     let mock = MockPlayerService()
     let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
     let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
@@ -43,7 +43,7 @@ import Foundation
     #expect(player.selectedChannel.name == "Canal 2")
 }
 
-@Test @MainActor func previousChannel_shouldSelectPreviousChannel() throws {
+@Test @MainActor func previousChannel_shouldSelectPreviousChannel() {
     let mock = MockPlayerService()
     let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
     let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
