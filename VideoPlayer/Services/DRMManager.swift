@@ -154,10 +154,13 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        if let httpResponse = response as? HTTPURLResponse {
-            print("CKC response status: \(httpResponse.statusCode)")
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            throw DRMError.licenseRequestFailed(statusCode: httpResponse.statusCode)
         }
-        
+    
+        if data.isEmpty{
+            throw DRMError.emptyCKC
+        }
         return data
     }
 }
