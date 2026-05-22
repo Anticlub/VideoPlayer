@@ -94,7 +94,13 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     }
     
     private func fetchCertificate(from url: URL) async throws -> Data {
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await URLSession.shared.data(from: url)
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            throw DRMError.certificateFetchFailed(statusCode: httpResponse.statusCode)
+        }
+        if data.isEmpty {
+            throw DRMError.emptyCertificate
+        }
         return data
     }
     
