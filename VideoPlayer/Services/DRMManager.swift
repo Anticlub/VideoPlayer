@@ -15,6 +15,12 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     enum DRMError: Error {
         case invalidContentIdentifier
         case invalidLicenseURL
+        case certificateFetchFailed(statusCode: Int)
+        case emptyCertificate
+        case spcGenerationFailed
+        case licenseRequestFailed(statusCode: Int)
+        case emptyCKC
+        case networkError(Error)
     }
     
     private let configuration: DRMConfiguration
@@ -76,11 +82,30 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
                 loadingRequest.dataRequest?.respond(with: ckc)
                 loadingRequest.finishLoading()
                 
-            } catch {
-
-                logger.error("FairPlay flow failed: \(error.localizedDescription)")
+            } catch let error as DRMError {
+                switch error {
+                case .invalidContentIdentifier:
+                    logger.error("Invalid content identifier")
+                case .invalidLicenseURL:
+                    logger.error("Invalid license URL")
+                case .certificateFetchFailed(let statusCode):
+                    logger.error("Certificate fetch failed with HTTP \(statusCode)")
+                case .emptyCertificate:
+                    logger.error("Empty certificate")
+                case .spcGenerationFailed:
+                    logger.error("Spc generation failed")
+                case .licenseRequestFailed(let statusCode):
+                    logger.error("License request failed with HTTP \(statusCode)")
+                case .emptyCKC:
+                    logger.error("Empty CKC")
+                case .networkError(let underlyingError):
+                    logger.error("Network error: \(underlyingError.localizedDescription)")
+                }
                 loadingRequest.finishLoading(with: error)
                 
+            } catch {
+                logger.error("FairPlay flow failed: \(error.localizedDescription)")
+                loadingRequest.finishLoading(with: error)
             }
         }
         
@@ -88,7 +113,13 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
     }
     
     private func fetchCertificate(from url: URL) async throws -> Data {
-        let (data, _) = try await URLSession.shared.data(from: url)
+        let (data, response) = try await URLSession.shared.data(from: url)
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            throw DRMError.certificateFetchFailed(statusCode: httpResponse.statusCode)
+        }
+        if data.isEmpty {
+            throw DRMError.emptyCertificate
+        }
         return data
     }
     
@@ -107,10 +138,11 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         certificate: Data,
         contentIdentifier: Data
     ) throws -> Data {
-        return try loadingRequest.streamingContentKeyRequestData(
-            forApp: certificate,
-            contentIdentifier: contentIdentifier,
-            options: nil)
+        do {
+            return try loadingRequest.streamingContentKeyRequestData(forApp: certificate, contentIdentifier: contentIdentifier)
+        } catch {
+            throw DRMError.spcGenerationFailed
+        }
     }
     
     private func requestCKC(
@@ -141,10 +173,13 @@ final class DRMManager: NSObject, AVAssetResourceLoaderDelegate {
         
         let (data, response) = try await URLSession.shared.data(for: request)
         
-        if let httpResponse = response as? HTTPURLResponse {
-            print("CKC response status: \(httpResponse.statusCode)")
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            throw DRMError.licenseRequestFailed(statusCode: httpResponse.statusCode)
         }
-        
+    
+        if data.isEmpty{
+            throw DRMError.emptyCKC
+        }
         return data
     }
 }
