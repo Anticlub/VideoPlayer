@@ -75,3 +75,13 @@ import Foundation
     let channels = M3UParser.parse(m3uText)
     #expect(channels[0].name == "Canal")
 }
+
+@Test @MainActor func m3uParser_withNonHttpURL_returnsEmptyArray() async throws {
+    let m3uText = """
+        #EXTM3U
+        #EXTINF:-1, Canal Test
+        ftp://test.com/stream
+        """
+    let channels = M3UParser.parse(m3uText)
+    #expect(channels.isEmpty)
+}
