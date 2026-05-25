@@ -7,11 +7,15 @@
 
 import AVFoundation
 import os
+internal import Combine
 
 private let logger = Logger(subsystem: "VideoPlayer", category: "PlayerService")
 
 final class PlayerService : PlayerServiceProtocol {
-    private(set) var availableVariants: [AVAssetVariant] = []
+    @Published var availableVariants: [AVAssetVariant] = []
+    var variantsPublisher: AnyPublisher<[AVAssetVariant], Never> {
+        $availableVariants.eraseToAnyPublisher()
+    }
     private(set) var player: AVPlayer?
     private var drmManager: DRMManager?
     

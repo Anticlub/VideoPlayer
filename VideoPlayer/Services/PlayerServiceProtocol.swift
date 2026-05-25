@@ -7,11 +7,13 @@
 
 import Foundation
 import AVFoundation
+internal import Combine
 
 protocol PlayerServiceProtocol {
     
     var player: AVPlayer? { get }
     var availableVariants: [AVAssetVariant] { get }
+    var variantsPublisher: AnyPublisher<[AVAssetVariant], Never> { get }
     
     func load(source: PlaybackSource)
     func play()

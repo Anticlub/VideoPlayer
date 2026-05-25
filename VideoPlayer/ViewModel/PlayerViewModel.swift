@@ -27,6 +27,8 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var selectedChannel: Channel
 
     @Published private(set) var playerInstanceID = UUID()
+    @Published private(set) var availableVariants: [AVAssetVariant] = []
+    @Published private(set) var variantsCancellable: AnyCancellable?
 
     init(playerService: PlayerServiceProtocol, initialChannels: [Channel]? = nil) {
         self.playerService = playerService
@@ -62,6 +64,12 @@ final class PlayerViewModel: ObservableObject {
         self.channels = resolvedCahannels
         self.selectedChannel = resolvedCahannels.first ?? fallbackChannel
         self.state = .loading
+        
+        variantsCancellable = playerService.variantsPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] variants in
+                self?.availableVariants = variants
+            }
     }
     
     func setLoading() { state = .loading }
@@ -194,5 +202,9 @@ final class PlayerViewModel: ObservableObject {
                 // tarea cancelada, no hacemos nada
             }
         }
+    }
+    
+    func selectVariant(_ variant: AVAssetVariant){
+        playerService.selectVariant(variant)
     }
 }
