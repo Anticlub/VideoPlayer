@@ -29,6 +29,7 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var playerInstanceID = UUID()
     @Published private(set) var availableVariants: [VideoVariant] = []
     @Published private(set) var variantsCancellable: AnyCancellable?
+    @Published private(set) var selectedVariant: VideoVariant?
 
     init(playerService: PlayerServiceProtocol, initialChannels: [Channel]? = nil) {
         self.playerService = playerService
@@ -39,13 +40,13 @@ final class PlayerViewModel: ObservableObject {
                 kind: .live
             ),
             PlaylistSource(
-                name: "Axinom DRM Clear",
-                url: Constants.Streams.axinomDrmClear,
+                name: "BipBop",
+                url: Constants.Streams.bipBop,
                 kind: .vod
             ),
             PlaylistSource(
                 name: "Dibujos",
-                url: Constants.Streams.axinomDrmTest,
+                url: Constants.Streams.dibujos,
                 kind: .vod
             ),
             
@@ -104,7 +105,7 @@ final class PlayerViewModel: ObservableObject {
                 return
             }
 
-            channels = [makeFairPlayTestChannel()] + parsed
+            channels = parsed
             selectedChannel = channels[0]
 
         } catch {
@@ -190,6 +191,7 @@ final class PlayerViewModel: ObservableObject {
         return lastPath.contains("manifest")
             || lastPath.contains("playlist")
             || lastPath.contains("index")
+            || lastPath.contains("master")
     }
     
     func scheduleHideChannelBar(onHide: @escaping () -> Void) {
@@ -205,6 +207,7 @@ final class PlayerViewModel: ObservableObject {
     }
     
     func selectVariant(_ variant: VideoVariant){
+        selectedVariant = variant
         playerService.selectVariant(variant.variant)
     }
 }

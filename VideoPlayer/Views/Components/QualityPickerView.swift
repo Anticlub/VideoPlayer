@@ -6,13 +6,28 @@
 //
 
 import SwiftUI
+import AVFoundation
 
 struct QualityPickerView: View {
+    let variants: [VideoVariant]
+    let selectedVariant: VideoVariant?
+    let onSelect: (VideoVariant) -> Void
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Menu {
+            ForEach(variants) { variant in
+                Button {
+                    onSelect(variant)
+                } label: {
+                    if selectedVariant?.id == variant.id {
+                        Label(variant.displayName, systemImage: "checkmark")
+                    } else {
+                        Text(variant.displayName)
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "video.badge.checkmark")
+        }
     }
-}
-
-#Preview {
-    QualityPickerView()
 }
