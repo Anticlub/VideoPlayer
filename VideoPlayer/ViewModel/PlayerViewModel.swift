@@ -27,7 +27,7 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var selectedChannel: Channel
 
     @Published private(set) var playerInstanceID = UUID()
-    @Published private(set) var availableVariants: [AVAssetVariant] = []
+    @Published private(set) var availableVariants: [VideoVariant] = []
     @Published private(set) var variantsCancellable: AnyCancellable?
 
     init(playerService: PlayerServiceProtocol, initialChannels: [Channel]? = nil) {
@@ -68,7 +68,7 @@ final class PlayerViewModel: ObservableObject {
         variantsCancellable = playerService.variantsPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] variants in
-                self?.availableVariants = variants
+                self?.availableVariants = variants.map { VideoVariant(variant: $0)}
             }
     }
     
@@ -204,7 +204,7 @@ final class PlayerViewModel: ObservableObject {
         }
     }
     
-    func selectVariant(_ variant: AVAssetVariant){
-        playerService.selectVariant(variant)
+    func selectVariant(_ variant: VideoVariant){
+        playerService.selectVariant(variant.variant)
     }
 }
