@@ -11,7 +11,7 @@ import os
 private let logger = Logger(subsystem: "VideoPlayer", category: "PlayerService")
 
 final class PlayerService : PlayerServiceProtocol {
-    
+    private(set) var availableVariants: [AVAssetVariant] = []
     private(set) var player: AVPlayer?
     private var drmManager: DRMManager?
     
@@ -28,6 +28,17 @@ final class PlayerService : PlayerServiceProtocol {
         
         let item = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: item)
+        
+        Task {
+            do {
+                let variants = try await asset.load(.variants)
+                await MainActor.run {
+                    self.availableVariants = variants
+                }
+            } catch {
+                logger.error("Failed to load variants: \(error.localizedDescription)")
+            }
+        }
     }
     
     func play() {
@@ -67,4 +78,10 @@ final class PlayerService : PlayerServiceProtocol {
         drmManager = manager
     }
     
+    func selectVariant(_ variant: AVAssetVariant) {
+        guard let item = player?.currentItem else { return }
+        guard let bitRate = variant.averageBitRate else { return }
+        item.preferredPeakBitRate = bitRate
+        
+    }
 }
