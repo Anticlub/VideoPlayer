@@ -31,6 +31,16 @@ struct ContentView: View {
 
             if showChannelBar {
                 channelSelectionLayer
+                
+                if vm.availableVariants.count > 1 {
+                    QualityPickerView(
+                        variants: vm.availableVariants,
+                        selectedVariant: vm.selectedVariant,
+                        onSelect: { variant in
+                            vm.selectVariant(variant)
+                        }
+                    )
+                }
             }
 
             overlayView
@@ -58,6 +68,16 @@ struct ContentView: View {
                 DispatchQueue.main.async {
                     focusedCardID = vm.selectedChannel.id
                 }
+            }
+        }
+        .onChange(of: focusedCardID) { _, _ in
+            vm.scheduleHideChannelBar {
+                showChannelBar = false
+            }
+        }
+        .onChange(of: vm.selectedPlaylist) { _, _ in
+            vm.scheduleHideChannelBar {
+                showChannelBar = false
             }
         }
         #if os(tvOS)
