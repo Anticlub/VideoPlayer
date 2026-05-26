@@ -14,6 +14,7 @@ protocol PlayerServiceProtocol {
     var player: AVPlayer? { get }
     var availableVariants: [AVAssetVariant] { get }
     var variantsPublisher: AnyPublisher<[AVAssetVariant], Never> { get }
+    var currentPresentationSizePublisher: AnyPublisher<CGSize, Never> { get }
     
     func load(source: PlaybackSource)
     func play()

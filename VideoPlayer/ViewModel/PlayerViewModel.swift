@@ -40,7 +40,7 @@ final class PlayerViewModel: ObservableObject {
                 kind: .live
             ),
             PlaylistSource(
-                name: "BipBop",
+                name: "Apple",
                 url: Constants.Streams.bipBop,
                 kind: .vod
             ),
@@ -192,6 +192,7 @@ final class PlayerViewModel: ObservableObject {
             || lastPath.contains("playlist")
             || lastPath.contains("index")
             || lastPath.contains("master")
+            || lastPath.contains("main")
     }
     
     func scheduleHideChannelBar(onHide: @escaping () -> Void) {

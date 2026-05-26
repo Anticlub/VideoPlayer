@@ -12,12 +12,17 @@ internal import Combine
 private let logger = Logger(subsystem: "VideoPlayer", category: "PlayerService")
 
 final class PlayerService : PlayerServiceProtocol {
+    @Published var currentPresentationSize: CGSize = .zero
+    var currentPresentationSizePublisher: AnyPublisher<CGSize, Never> {
+        $currentPresentationSize.eraseToAnyPublisher()
+    }
     @Published var availableVariants: [AVAssetVariant] = []
     var variantsPublisher: AnyPublisher<[AVAssetVariant], Never> {
         $availableVariants.eraseToAnyPublisher()
     }
     private(set) var player: AVPlayer?
     private var drmManager: DRMManager?
+    private var presentationSizeObserver: NSKeyValueObservation?
     
     func load(source: PlaybackSource) {
         logger.info("Loading playback source")
@@ -32,6 +37,11 @@ final class PlayerService : PlayerServiceProtocol {
         
         let item = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: item)
+        presentationSizeObserver = item.observe(\.presentationSize, options: [.new]) { [weak self] item, _ in
+            DispatchQueue.main.async {
+                self?.currentPresentationSize = item.presentationSize
+            }
+        }
         
         Task {
             do {
