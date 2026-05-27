@@ -32,9 +32,9 @@ struct ContentView: View {
             if showChannelBar {
                 channelSelectionLayer
                 
-                if vm.availableVariants.count > 1 {
+                if vm.uniqueVariantsByHeight.count > 1 {
                     QualityPickerView(
-                        variants: vm.availableVariants,
+                        variants: vm.uniqueVariantsByHeight,
                         selectedVariant: vm.selectedVariant,
                         onSelect: { variant in
                             vm.selectVariant(variant)
