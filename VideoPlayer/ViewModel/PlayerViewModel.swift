@@ -24,6 +24,7 @@ final class PlayerViewModel: ObservableObject {
 
     @Published private(set) var channels: [Channel]
     @Published private(set) var selectedChannel: Channel
+    private(set) var playingChannel: Channel?
 
     @Published private(set) var playerInstanceID = UUID()
     @Published private(set) var availableVariants: [VideoVariant] = []
@@ -92,7 +93,7 @@ final class PlayerViewModel: ObservableObject {
     func setIdle () { state = .idle }
 
     func selectChannel(_ channel: Channel) {
-        if channel.id == selectedChannel.id, player != nil {
+        if channel.id == playingChannel?.id, player != nil {
             return
         }
 
@@ -105,6 +106,11 @@ final class PlayerViewModel: ObservableObject {
 
         playerService.load(source: source)
         playerInstanceID = UUID()
+        playingChannel = channel
+    }
+    
+    func updateSelectedChannel(_ channel: Channel) {
+        selectedChannel = channel
     }
     
     func loadPlaylist(from url: URL) async {
@@ -119,7 +125,7 @@ final class PlayerViewModel: ObservableObject {
             }
 
             channels = parsed
-            selectedChannel = channels[0]
+            updateSelectedChannel(channels[0])
 
         } catch {
             setError("No se pudo cargar la playlist: \(error.localizedDescription)")
