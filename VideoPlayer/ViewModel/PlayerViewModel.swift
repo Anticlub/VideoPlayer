@@ -29,6 +29,20 @@ final class PlayerViewModel: ObservableObject {
     @Published private(set) var availableVariants: [VideoVariant] = []
     @Published private(set) var variantsCancellable: AnyCancellable?
     @Published private(set) var selectedVariant: VideoVariant?
+    
+    var uniqueVariantsByHeight: [VideoVariant] {
+        var seenHeights = Set<Int>()
+        return availableVariants
+            .sorted { a, b in
+                a.bitRate > b.bitRate
+            }
+            .filter { variant in
+                seenHeights.insert(variant.height).inserted
+            }
+            .sorted { a, b in
+                a.height > b.height
+            }
+    }
 
     init(playerService: PlayerServiceProtocol, initialChannels: [Channel]? = nil) {
         self.playerService = playerService
@@ -193,7 +207,6 @@ final class PlayerViewModel: ObservableObject {
             || lastPath.contains("master")
             || lastPath.contains("main")
     }
-    
     
     func selectVariant(_ variant: VideoVariant){
         selectedVariant = variant

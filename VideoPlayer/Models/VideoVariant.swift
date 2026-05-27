@@ -21,4 +21,11 @@ struct VideoVariant: Identifiable {
         }
         return "Auto"
     }
+    
+    var height: Int {
+        if let height = variant.videoAttributes?.presentationSize.height {
+            return Int(height)
+        }
+        return 0
+    }
 }
