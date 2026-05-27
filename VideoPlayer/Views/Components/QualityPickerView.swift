@@ -29,5 +29,6 @@ struct QualityPickerView: View {
         } label: {
             Image(systemName: "video.badge.checkmark")
         }
+        .padding(.horizontal, 40)
     }
 }

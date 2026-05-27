@@ -31,16 +31,6 @@ struct ContentView: View {
 
             if showChannelBar {
                 channelSelectionLayer
-                
-                if vm.uniqueVariantsByHeight.count > 1 {
-                    QualityPickerView(
-                        variants: vm.uniqueVariantsByHeight,
-                        selectedVariant: vm.selectedVariant,
-                        onSelect: { variant in
-                            vm.selectVariant(variant)
-                        }
-                    )
-                }
             }
 
             overlayView
@@ -128,6 +118,12 @@ struct ContentView: View {
                 vm.selectChannel(channel)
                 hasSelectedChannel = true
                 showChannelBar = false
+            },
+            variantsAvailables: vm.uniqueVariantsByHeight,
+            selectedVariant: vm.selectedVariant,
+            onSelectVariant: { variant in
+                vm.selectVariant(variant)
+                
             }
         )
     }

@@ -14,9 +14,20 @@ struct ChannelSelectionOverlayView: View {
     let focusBinding: FocusState<UUID?>.Binding
     let onSelectPlaylist: (PlaylistSource) -> Void
     let onSelectChannel: (Channel) -> Void
+    let variantsAvailables: [VideoVariant]
+    let selectedVariant: VideoVariant?
+    let onSelectVariant: (VideoVariant) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
+            
+            if variantsAvailables.count > 1 {
+                QualityPickerView(
+                    variants: variantsAvailables,
+                    selectedVariant: selectedVariant,
+                    onSelect: onSelectVariant)
+            }
+            
             PlaylistBarView(
                 sources: playlistSources,
                 onSelect: onSelectPlaylist
