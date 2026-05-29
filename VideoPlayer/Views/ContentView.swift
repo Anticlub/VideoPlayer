@@ -10,7 +10,9 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var vm = PlayerViewModel(playerService: PlayerService())
     @State private var showChannelBar = true
+    @State private var showChannelInfo = false
     @State private var hasSelectedChannel = false
+    @State private var channelInfoTask: Task<Void, Never>?
     @FocusState private var focusedCardID: UUID?
     
     private var channelsByGroup: [(group: String, items: [Channel])] {
@@ -32,14 +34,29 @@ struct ContentView: View {
             if showChannelBar {
                 channelSelectionLayer
             }
+            
+            if showChannelInfo {
+                ChannelInfoOverlayView(
+                    name: vm.playingChannel?.name ?? "",
+                    logoURL: vm.playingChannel?.logoURL,
+                    groupTitle: vm.playingChannel?.groupTitle,
+                    quality: vm.selectedVariant?.displayName ?? "Auto"
+                )
+                .transition(.opacity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity,alignment: .topLeading)
+                .padding(.top, 60)
+                .padding(.leading, 40)
+            }
 
             overlayView
         }
+        .animation(.easeInOut, value: showChannelInfo)
         .task {
             await vm.loadInitialPlaylist()
         }
         .onChange(of: showChannelBar) { _, isShown in
             if isShown {
+                showChannelInfo = false
                 focusedCardID = vm.selectedChannel.id
             } else {
                 focusedCardID = nil
@@ -56,7 +73,7 @@ struct ContentView: View {
         #if os(tvOS)
         .onExitCommand {
             if showChannelBar {
-                withAnimation(.easeInOut) { showChannelBar = false }
+                showChannelBar = false
                 focusedCardID = nil
             } else {
                 showChannelBar = true
@@ -118,6 +135,12 @@ struct ContentView: View {
                 vm.selectChannel(channel)
                 hasSelectedChannel = true
                 showChannelBar = false
+                showChannelInfo = true
+                channelInfoTask?.cancel()
+                channelInfoTask = Task {
+                    try? await Task.sleep(for: .seconds(5))
+                    showChannelInfo = false
+                }
             },
             variantsAvailables: vm.uniqueVariantsByHeight,
             selectedVariant: vm.selectedVariant,
