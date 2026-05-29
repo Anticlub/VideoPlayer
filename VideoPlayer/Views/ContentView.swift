@@ -43,6 +43,9 @@ struct ContentView: View {
                     quality: vm.selectedVariant?.displayName ?? "Auto"
                 )
                 .transition(.opacity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity,alignment: .topLeading)
+                .padding(.top, 60)
+                .padding(.leading, 40)
             }
 
             overlayView

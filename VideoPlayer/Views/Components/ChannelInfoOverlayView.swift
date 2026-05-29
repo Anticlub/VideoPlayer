@@ -13,41 +13,36 @@ struct ChannelInfoOverlayView: View {
     let groupTitle: String?
     let quality: String?
     var body: some View {
-        ZStack (alignment: .topLeading ){
-            Color.clear
-            HStack {
-                if let logo = logoURL {
-                    AsyncImage(url: logo) { phase in
-                        switch phase {
-                        case .empty:
-                            ProgressView()
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 60, height: 60)
-                                .cornerRadius(12)
-                        case .failure(_):
-                            EmptyView()
-                        @unknown default:
-                            EmptyView()
-                        }
+        HStack {
+            if let logo = logoURL {
+                AsyncImage(url: logo) { phase in
+                    switch phase {
+                    case .empty:
+                        ProgressView()
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 60, height: 60)
+                            .cornerRadius(12)
+                    case .failure(_):
+                        EmptyView()
+                    @unknown default:
+                        EmptyView()
                     }
                 }
-                Text(name)
-                if let group = groupTitle {
-                    Text(group)
-                }
-                if let quality = quality {
-                    Text(quality)
-                }
             }
-            .padding()
-            .background(.black.opacity(0.35))
-            .cornerRadius(12)
+            Text(name)
+            if let group = groupTitle {
+                Text(group)
+            }
+            if let quality = quality {
+                Text(quality)
+            }
         }
-        .padding(.top, 60)
-        .padding(.horizontal, 60)
+        .padding()
+        .background(.black.opacity(0.35))
+        .cornerRadius(12)
     }
 }
 
