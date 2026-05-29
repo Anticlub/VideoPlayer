@@ -40,7 +40,7 @@ struct ContentView: View {
                     name: vm.playingChannel?.name ?? "",
                     logoURL: vm.playingChannel?.logoURL,
                     groupTitle: vm.playingChannel?.groupTitle,
-                    quality: vm.selectedVariant?.displayName ?? "Auto"
+                    quality: vm.currentQuality
                 )
                 .transition(.opacity)
                 .frame(maxWidth: .infinity, maxHeight: .infinity,alignment: .topLeading)
