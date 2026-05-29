@@ -11,7 +11,7 @@ struct ChannelInfoOverlayView: View {
     let name: String
     let logoURL: URL?
     let groupTitle: String?
-    let quality: String?
+    let quality: String
     var body: some View {
         HStack {
             if let logo = logoURL {
@@ -36,21 +36,10 @@ struct ChannelInfoOverlayView: View {
             if let group = groupTitle {
                 Text(group)
             }
-            if let quality = quality {
-                Text(quality)
-            }
+            Text(quality)
         }
         .padding()
         .background(.black.opacity(0.35))
         .cornerRadius(12)
     }
-}
-
-#Preview {
-    ChannelInfoOverlayView(
-        name: "Canal 24h",
-        logoURL: URL(string: "https://graph.facebook.com/radionacionalrne/picture?width=200&height=200"),
-        groupTitle: "Noticias",
-        quality: "1080p"
-    )
 }
