@@ -40,12 +40,14 @@ struct ContentView: View {
                     name: vm.playingChannel?.name ?? "",
                     logoURL: vm.playingChannel?.logoURL,
                     groupTitle: vm.playingChannel?.groupTitle,
-                    quality: vm.selectedVariant?.displayName
+                    quality: vm.selectedVariant?.displayName ?? "Auto"
                 )
+                .transition(.opacity)
             }
 
             overlayView
         }
+        .animation(.easeInOut, value: showChannelInfo)
         .task {
             await vm.loadInitialPlaylist()
         }
@@ -68,7 +70,7 @@ struct ContentView: View {
         #if os(tvOS)
         .onExitCommand {
             if showChannelBar {
-                withAnimation(.easeInOut) { showChannelBar = false }
+                showChannelBar = false
                 focusedCardID = nil
             } else {
                 showChannelBar = true
