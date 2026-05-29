@@ -28,8 +28,10 @@ final class PlayerViewModel: ObservableObject {
 
     @Published private(set) var playerInstanceID = UUID()
     @Published private(set) var availableVariants: [VideoVariant] = []
-    @Published private(set) var variantsCancellable: AnyCancellable?
+    private(set) var variantsCancellable: AnyCancellable?
     @Published private(set) var selectedVariant: VideoVariant?
+    @Published private(set) var currentPresentationSize: CGSize = .zero
+    private var presentationSizeCancellable: AnyCancellable?
     
     var uniqueVariantsByHeight: [VideoVariant] {
         var seenHeights = Set<Int>()
@@ -43,6 +45,15 @@ final class PlayerViewModel: ObservableObject {
             .sorted { a, b in
                 a.height > b.height
             }
+    }
+    
+    var currentQuality: String {
+        let height = currentPresentationSize.height
+        if height == 0 {
+            return "Auto"
+        } else {
+            return "\(Int(height))p"
+        }
     }
 
     init(playerService: PlayerServiceProtocol, initialChannels: [Channel]? = nil) {
@@ -84,6 +95,13 @@ final class PlayerViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] variants in
                 self?.availableVariants = variants.map { VideoVariant(variant: $0)}
+            }
+        
+        presentationSizeCancellable = playerService.currentPresentationSizePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] size in
+                self?.currentPresentationSize = size
+                
             }
     }
     
