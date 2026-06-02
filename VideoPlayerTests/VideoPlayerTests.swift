@@ -9,14 +9,13 @@ import Testing
 @testable import VideoPlayer
 import Foundation
 
-@Test @MainActor func selectChannel_shouldCallLoad() {
+@Test @MainActor func selectChannel_shouldCallLoad() throws {
     let mock = MockPlayerService()
     let player = PlayerViewModel(playerService: mock)
     let url = Foundation.URL(string: "https://test.com")
-    let channel = Channel(name: "Test", url: url!)
+    let channel = Channel(name: "Test", url: try #require (url))
     player.selectChannel(channel)
     #expect(mock.loadWasCalled == true)
-    
 }
 
 @Test @MainActor func stop_shouldCallStop() {
@@ -34,19 +33,19 @@ import Foundation
 }
 
 // TODO: testear nextChannel y previousChannel una vez que se refactorice PlayerViewModel para permitir inyectar canales
-@Test @MainActor func nextChannel_shouldSelectNextChannel() {
+@Test @MainActor func nextChannel_shouldSelectNextChannel() throws {
     let mock = MockPlayerService()
-    let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
-    let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
+    let channel1 = Channel(name: "Canal 1", url: try #require (URL(string: "https://test1.com")))
+    let channel2 = Channel(name: "Canal 2", url: try #require (URL(string: "https://test2.com")))
     let player = PlayerViewModel(playerService: mock, initialChannels: [channel1, channel2])
     player.nextChannel()
     #expect(player.selectedChannel.name == "Canal 2")
 }
 
-@Test @MainActor func previousChannel_shouldSelectPreviousChannel() {
+@Test @MainActor func previousChannel_shouldSelectPreviousChannel() throws {
     let mock = MockPlayerService()
-    let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
-    let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
+    let channel1 = Channel(name: "Canal 1", url: try #require (URL(string: "https://test1.com")))
+    let channel2 = Channel(name: "Canal 2", url: try #require (URL(string: "https://test2.com")))
     let player = PlayerViewModel(playerService: mock, initialChannels: [channel1, channel2])
     player.nextChannel()
     #expect(player.selectedChannel.name == "Canal 2")
@@ -54,10 +53,10 @@ import Foundation
     #expect(player.selectedChannel.name == "Canal 1")
 }
 
-@Test @MainActor func nextChannel_atLastChannel_shouldStayOnLastChannel() {
+@Test @MainActor func nextChannel_atLastChannel_shouldStayOnLastChannel() throws {
     let mock = MockPlayerService()
-    let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
-    let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
+    let channel1 = Channel(name: "Canal 1", url: try #require (URL(string: "https://test1.com")))
+    let channel2 = Channel(name: "Canal 2", url: try #require (URL(string: "https://test2.com")))
     let player = PlayerViewModel(playerService: mock, initialChannels: [channel1, channel2])
     player.nextChannel()
     #expect(player.selectedChannel.name == "Canal 2")
@@ -65,10 +64,10 @@ import Foundation
     #expect(player.selectedChannel.name == "Canal 2")
 }
 
-@Test @MainActor func previousChannel_atFirstChannel_shouldStayOnFirstChannel() {
+@Test @MainActor func previousChannel_atFirstChannel_shouldStayOnFirstChannel() throws {
     let mock = MockPlayerService()
-    let channel1 = Channel(name: "Canal 1", url: Foundation.URL(string: "https://test1.com")!)
-    let channel2 = Channel(name: "Canal 2", url: Foundation.URL(string: "https://test2.com")!)
+    let channel1 = Channel(name: "Canal 1", url: try #require (URL(string: "https://test1.com")))
+    let channel2 = Channel(name: "Canal 2", url: try #require (URL(string: "https://test2.com")))
     let player = PlayerViewModel(playerService: mock, initialChannels: [channel1, channel2])
     player.previousChannel()
     #expect(player.selectedChannel.name == "Canal 1")
