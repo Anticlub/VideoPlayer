@@ -79,6 +79,20 @@ struct ContentView: View {
                 showChannelBar = true
             }
         }
+            .onMoveCommand { direction in
+                if !showChannelBar {
+                    switch direction {
+                    case .up:
+                        vm.nextChannel()
+                        showChannelInfoBriefly(seconds: 6)
+                    case .down:
+                        vm.previousChannel()
+                        showChannelInfoBriefly(seconds: 6)
+                    default:
+                        break
+                    }
+                }
+        }
         #endif
         #if os(iOS)
         .gesture(
@@ -135,12 +149,7 @@ struct ContentView: View {
                 vm.selectChannel(channel)
                 hasSelectedChannel = true
                 showChannelBar = false
-                showChannelInfo = true
-                channelInfoTask?.cancel()
-                channelInfoTask = Task {
-                    try? await Task.sleep(for: .seconds(5))
-                    showChannelInfo = false
-                }
+                showChannelInfoBriefly(seconds: 6)
             },
             variantsAvailables: vm.uniqueVariantsByHeight,
             selectedVariant: vm.selectedVariant,
@@ -150,5 +159,12 @@ struct ContentView: View {
             }
         )
     }
-    
+    private func showChannelInfoBriefly(seconds :Int) {
+        channelInfoTask?.cancel()
+        showChannelInfo = true
+        channelInfoTask = Task {
+            try? await Task.sleep(for: .seconds(seconds))
+            showChannelInfo = false
+        }
+    }
 }
