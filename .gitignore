@@ -1,3 +1,6 @@
 
 xcuserdata/
 *.xcbkptlist
+.DS_Store
+DerivedData/
+build/

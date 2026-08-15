@@ -35,8 +35,8 @@ enum M3UParser {
                 }
                 
                 if let logoString = extractAttribute("tvg-logo", from: line),
-                   let logtoURL = URL(string: logoString) {
-                    pendingLogoURL = logtoURL
+                   let logoURL = URL(string: logoString) {
+                    pendingLogoURL = logoURL
                 } else {
                     pendingLogoURL = nil
                 }
