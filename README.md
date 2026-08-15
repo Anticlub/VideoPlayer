@@ -1,134 +1,113 @@
-# VideoPlayer tvOS
+# VideoPlayer (tvOS · iPhone)
 
-A simple tvOS video player prototype built with **SwiftUI** that
-supports:
+> Reproductor de streaming para **Apple TV / iPhone** hecho con **SwiftUI**: HLS,
+> **FairPlay DRM** de punta a punta, listas M3U y controles de reproducción para TV.
 
--   HLS playback
--   Direct stream playback
--   FairPlay DRM streams
--   Channel playlists (M3U)
--   Custom playback controls
+![Platform](https://img.shields.io/badge/platform-tvOS%20%7C%20iOS-000000?logo=apple&logoColor=white)
+![Language](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+![UI](https://img.shields.io/badge/SwiftUI-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-This project was built as part of a learning process for **video
-streaming and DRM integration**.
+📱 **También disponible para Android** → [VideoPlayer-KT (Android/Kotlin)](https://github.com/Anticlub/VideoPlayer-KT).
+Mismo producto, dos ecosistemas nativos.
 
-------------------------------------------------------------------------
+---
 
-# Features
+## Capturas
 
--   HLS playback using `AVPlayer`
--   FairPlay DRM support via `AVAssetResourceLoader`
--   Playlist loading (M3U)
--   Channel selection UI
--   Custom playback controls
--   Focus navigation for tvOS
--   Modular architecture
+> _Pendiente de añadir (Fase B):_ barra de canales, overlay de info, quality picker y un GIF de zapping.
+> Capturar con `xcrun simctl io booted recordVideo zapping.mov` y convertir a GIF con `ffmpeg`.
 
-------------------------------------------------------------------------
+<!-- | Canales | Info overlay | Calidad |
+|---|---|---|
+| ![](docs/img/channels.png) | ![](docs/img/info.png) | ![](docs/img/quality.png) | -->
 
-# Architecture
+---
 
-The project follows a simple MVVM-style structure.
+## Features
 
-Models ├─ Channel\
-├─ DRMConfiguration\
-├─ PlaybackSource\
-└─ PlaylistSource
+- ▶️ **Reproducción HLS** con `AVPlayer`.
+- 🔐 **FairPlay DRM** completo vía `AVAssetResourceLoaderDelegate` (flujo SPC → CKC).
+- 📂 **Listas M3U** con parser propio (logo, grupo, nombre de canal).
+- 🎚️ **Selector de calidad** manual a partir de las variantes del stream.
+- 📺 **UI de TV**: barra de canales, overlays de info/selección, navegación por foco (tvOS).
+- 🗓️ **EPG** (guía de programación XMLTV): parser + modelo listos ([en curso](https://github.com/Anticlub/VideoPlayer/tree/feat/add-epg) su integración en la UI).
 
-Services ├─ PlayerService\
-└─ DRMManager
+## Paridad de features (tvOS ↔ Android)
 
-ViewModels └─ PlayerViewModel
+| Feature | tvOS | Android |
+|---|:---:|:---:|
+| Reproducción HLS | ✅ | ✅ |
+| Playlists M3U | ✅ | ✅ |
+| DRM | ✅ FairPlay | 🚧 Widevine |
+| EPG | 🚧 | 🚧 |
+| Login + backend | 🚧 | ✅ Firebase |
+| Backend compartido | 🚧 | ✅ |
+| Tests unitarios | ✅ | 🚧 |
+| CI | 🚧 | 🚧 |
 
-Views ├─ ContentView\
-├─ PlayerView\
-├─ PlayerControlsView\
-├─ ChannelListView\
-└─ ChannelCardView
+Las casillas 🚧 son el roadmap público del proyecto multiplataforma.
 
-### Responsibilities
+## Arquitectura
 
-**PlayerService** - Creates `AVPlayer` - Loads playback sources -
-Handles play / pause / stop
+MVVM con servicios inyectables por protocolo (testeables con mocks).
 
-**DRMManager** - Handles FairPlay DRM requests - Generates SPC -
-Requests CKC from license server
+```mermaid
+flowchart TD
+    subgraph Views
+        V["ContentView · PlayerView · Overlays · ChannelCard"]
+    end
+    VM["PlayerViewModel"]
+    subgraph Services
+        S["PlayerService · DRMManager · M3UParser · EPGParser"]
+    end
+    subgraph Models
+        M["Channel · PlaylistSource · DRMConfiguration · EPGProgramme"]
+    end
+    V --> VM
+    VM --> S
+    S --> M
+```
 
-**PlayerViewModel** - Manages playlists - Manages channels - Controls
-playback state
+- **Views** — SwiftUI, navegación por foco de tvOS, overlays y controles.
+- **PlayerViewModel** — estado de reproducción, playlists, canales y variantes.
+- **Services** — `PlayerService` (crea el `AVPlayer`), `DRMManager` (FairPlay), parsers M3U/EPG. Inyectables por protocolo (`PlayerServiceProtocol` + `MockPlayerService` en tests).
+- **Models** — tipos de dominio (canal, fuente de playlist, config DRM, programa EPG).
 
-**Views** - SwiftUI interface - Focus navigation - Player controls
+### Flujo FairPlay DRM
 
-------------------------------------------------------------------------
+```
+AVPlayer carga el manifiesto HLS → detecta la clave skd://
+→ AVAssetResourceLoaderDelegate intercepta la petición
+→ DRMManager genera el SPC → lo envía al license server
+→ el servidor devuelve el CKC → AVPlayer descifra y reproduce
+```
 
-# FairPlay DRM Flow
+## Stack técnico
 
-AVPlayer loads HLS manifest\
-↓\
-Manifest contains skd:// key\
-↓\
-AVAssetResourceLoaderDelegate intercepts request\
-↓\
-DRMManager generates SPC\
-↓\
-SPC sent to license server\
-↓\
-Server returns CKC\
-↓\
-AVPlayer receives CKC\
-↓\
-Playback continues
+Swift 6 · SwiftUI · AVFoundation / AVKit · FairPlay (AVAssetResourceLoader) · Combine · async/await · XCTest.
 
-------------------------------------------------------------------------
+## Puesta en marcha
 
-# Test Streams
+```bash
+git clone https://github.com/Anticlub/VideoPlayer.git
+open VideoPlayer.xcodeproj
+```
 
-The project includes test streams for experimentation:
+- Requiere **Xcode** con plataforma tvOS instalada.
+- Ejecutar en el simulador de Apple TV o en iPhone.
+- ⚠️ FairPlay DRM **no funciona en el simulador**; para probar DRM real hace falta un dispositivo Apple.
 
--   Clear HLS stream
--   DRM protected HLS stream (FairPlay test vector)
+### Tests
 
-Example DRM test stream:
+```bash
+xcodebuild test \
+  -project VideoPlayer.xcodeproj \
+  -scheme VideoPlayer \
+  -destination 'platform=tvOS Simulator,name=Apple TV' \
+  -testPlan VideoPlayer
+```
 
-https://media.axprod.net/TestVectors/v9-MultiFormat/Encrypted_Cbcs/Manifest_1080p.m3u8
+## Licencia
 
-------------------------------------------------------------------------
-
-# Requirements
-
--   Xcode
--   tvOS target
--   Apple device recommended for FairPlay testing
-
-Note:\
-FairPlay DRM may not work correctly in the **simulator**.
-
-------------------------------------------------------------------------
-
-# Learning Goals
-
-This project was built to learn:
-
--   HLS streaming
--   AVPlayer architecture
--   FairPlay DRM integration
--   Resource loader delegation
--   SwiftUI + tvOS focus navigation
--   Clean architecture separation
-
-------------------------------------------------------------------------
-
-# Future Improvements
-
-Possible improvements:
-
--   Better playlist management
--   DRM configuration via API
--   More robust error handling
--   Better UI/UX for channel navigation
-
-------------------------------------------------------------------------
-
-# Author
-
-Cristofer Fernandez
+[MIT](LICENSE) © 2026 Cristofer Fernandez
