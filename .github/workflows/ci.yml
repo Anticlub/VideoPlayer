@@ -25,10 +25,14 @@ jobs:
             | jq -r '.devices | to_entries[] | select(.key | test("tvOS")) | .value[] | select(.isAvailable) | .udid' \
             | head -1)
           echo "Using tvOS simulator: $UDID"
+          # The test target's deployment target (26.2) can be higher than the
+          # simulator runtime a runner ships with; pin it to the app's floor
+          # (26.0) so the tests run on any tvOS 26.x simulator.
           xcodebuild test \
             -project VideoPlayer.xcodeproj \
             -scheme VideoPlayer \
             -destination "id=$UDID" \
             -testPlan VideoPlayer \
             -skip-testing:VideoPlayerUITests \
-            -enableCodeCoverage YES
+            -enableCodeCoverage YES \
+            TVOS_DEPLOYMENT_TARGET=26.0
