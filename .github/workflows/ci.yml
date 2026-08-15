@@ -19,10 +19,16 @@ jobs:
       # covered by Xcode Cloud.
       - name: Build & test
         run: |
+          # Pick whatever tvOS simulator the runner's Xcode ships with,
+          # instead of hardcoding a device name that varies across images.
+          UDID=$(xcrun simctl list devices available --json \
+            | jq -r '.devices | to_entries[] | select(.key | test("tvOS")) | .value[] | select(.isAvailable) | .udid' \
+            | head -1)
+          echo "Using tvOS simulator: $UDID"
           xcodebuild test \
             -project VideoPlayer.xcodeproj \
             -scheme VideoPlayer \
-            -destination 'platform=tvOS Simulator,name=Apple TV' \
+            -destination "id=$UDID" \
             -testPlan VideoPlayer \
             -skip-testing:VideoPlayerUITests \
             -enableCodeCoverage YES
