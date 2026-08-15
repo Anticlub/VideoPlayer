@@ -86,9 +86,9 @@ final class PlayerViewModel: ObservableObject {
             url: URL(string: "https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_adv_example_hevca/master.m3u8")!
         )
 
-        let resolvedCahannels = initialChannels ?? [fallbackChannel]
-        self.channels = resolvedCahannels
-        self.selectedChannel = resolvedCahannels.first ?? fallbackChannel
+        let resolvedChannels = initialChannels ?? [fallbackChannel]
+        self.channels = resolvedChannels
+        self.selectedChannel = resolvedChannels.first ?? fallbackChannel
         self.state = .loading
         
         variantsCancellable = playerService.variantsPublisher
