@@ -6,33 +6,40 @@
 //
 
 import Foundation
-internal import Combine
+import Observation
 import AVFoundation
 
 
+@Observable
 @MainActor
-final class PlayerViewModel: ObservableObject {
+final class PlayerViewModel {
     private let playerService : PlayerServiceProtocol
-    
+
     var player: AVPlayer? {
         playerService.player
     }
-    @Published var state: PlayerState
-    
-    @Published private(set) var playlistSources: [PlaylistSource]
-    @Published private(set) var selectedPlaylist: PlaylistSource?
+    var state: PlayerState
 
-    @Published private(set) var channels: [Channel]
-    @Published private(set) var selectedChannel: Channel
+    private(set) var playlistSources: [PlaylistSource]
+    private(set) var selectedPlaylist: PlaylistSource?
+
+    private(set) var channels: [Channel]
+    private(set) var selectedChannel: Channel
     private(set) var playingChannel: Channel?
 
-    @Published private(set) var playerInstanceID = UUID()
-    @Published private(set) var availableVariants: [VideoVariant] = []
-    private(set) var variantsCancellable: AnyCancellable?
-    @Published private(set) var selectedVariant: VideoVariant?
-    @Published private(set) var currentPresentationSize: CGSize = .zero
-    private var presentationSizeCancellable: AnyCancellable?
-    
+    private(set) var playerInstanceID = UUID()
+    private(set) var selectedVariant: VideoVariant?
+
+    /// Variantes de calidad, derivadas del servicio (observable) y mapeadas a `VideoVariant`.
+    var availableVariants: [VideoVariant] {
+        playerService.availableVariants.map { VideoVariant(variant: $0) }
+    }
+
+    /// Tamaño de presentación actual, expuesto por el servicio observable.
+    var currentPresentationSize: CGSize {
+        playerService.currentPresentationSize
+    }
+
     var uniqueVariantsByHeight: [VideoVariant] {
         var seenHeights = Set<Int>()
         return availableVariants
@@ -90,19 +97,6 @@ final class PlayerViewModel: ObservableObject {
         self.channels = resolvedChannels
         self.selectedChannel = resolvedChannels.first ?? fallbackChannel
         self.state = .loading
-        
-        variantsCancellable = playerService.variantsPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] variants in
-                self?.availableVariants = variants.map { VideoVariant(variant: $0)}
-            }
-        
-        presentationSizeCancellable = playerService.currentPresentationSizePublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] size in
-                self?.currentPresentationSize = size
-                
-            }
     }
     
     func setLoading() { state = .loading }
