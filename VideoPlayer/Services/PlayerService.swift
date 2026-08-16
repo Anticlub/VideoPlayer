@@ -7,42 +7,37 @@
 
 import AVFoundation
 import os
-internal import Combine
+import Observation
 
 private let logger = Logger(subsystem: "VideoPlayer", category: "PlayerService")
 
-final class PlayerService : PlayerServiceProtocol {
-    @Published var currentPresentationSize: CGSize = .zero
-    var currentPresentationSizePublisher: AnyPublisher<CGSize, Never> {
-        $currentPresentationSize.eraseToAnyPublisher()
-    }
-    @Published var availableVariants: [AVAssetVariant] = []
-    var variantsPublisher: AnyPublisher<[AVAssetVariant], Never> {
-        $availableVariants.eraseToAnyPublisher()
-    }
+@Observable
+final class PlayerService: PlayerServiceProtocol {
+    var currentPresentationSize: CGSize = .zero
+    var availableVariants: [AVAssetVariant] = []
     private(set) var player: AVPlayer?
-    private var drmManager: DRMManager?
-    private var presentationSizeObserver: NSKeyValueObservation?
-    
+    @ObservationIgnored private var drmManager: DRMManager?
+    @ObservationIgnored private var presentationSizeObserver: NSKeyValueObservation?
+
     func load(source: PlaybackSource) {
         logger.info("Loading playback source")
         let asset = AVURLAsset(url: source.url)
-        
+
         if let drm = source.drm {
             logger.info("DRM configuration detected")
             configureDRM(for: asset, configuration: drm)
         } else {
             drmManager = nil
         }
-        
+
         let item = AVPlayerItem(asset: asset)
         player = AVPlayer(playerItem: item)
         presentationSizeObserver = item.observe(\.presentationSize, options: [.new]) { [weak self] item, _ in
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 self?.currentPresentationSize = item.presentationSize
             }
         }
-        
+
         Task {
             do {
                 let variants = try await asset.load(.variants)
@@ -54,20 +49,20 @@ final class PlayerService : PlayerServiceProtocol {
             }
         }
     }
-    
+
     func play() {
         logger.debug("Play")
         player?.play()
     }
-    
+
     func pause() {
         logger.debug("Pause")
         player?.pause()
     }
-    
+
     func togglePlayPause() {
         guard let player else { return }
-        
+
         if player.timeControlStatus == .playing {
             logger.debug("Toggle -> pause")
             player.pause()
@@ -76,14 +71,14 @@ final class PlayerService : PlayerServiceProtocol {
             player.play()
         }
     }
-    
+
     func stop() {
         logger.info("Stop playback")
         player?.pause()
         player = nil
         drmManager = nil
     }
-    
+
     private func configureDRM(for asset: AVURLAsset, configuration: DRMConfiguration) {
         logger.info("Configuring FairPlay DRM")
 
@@ -91,11 +86,11 @@ final class PlayerService : PlayerServiceProtocol {
         manager.prepare(asset: asset)
         drmManager = manager
     }
-    
+
     func selectVariant(_ variant: AVAssetVariant) {
         guard let item = player?.currentItem else { return }
         guard let bitRate = variant.averageBitRate else { return }
         item.preferredPeakBitRate = bitRate
-        
+
     }
 }
