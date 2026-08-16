@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C0108D233032285200F71C38 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = C0108D223032285200F71C38 /* GoogleService-Info.plist */; };
+		C0497B5D30322E910044F836 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C0497B5C30322E910044F836 /* FirebaseAuth */; };
+		C0497B5F30322E960044F836 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = C0497B5E30322E960044F836 /* FirebaseDatabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C0E4A4162F55A31A004042A1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C0108D223032285200F71C38 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		C0E4A4082F55A317004042A1 /* VideoPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VideoPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0E4A4152F55A31A004042A1 /* VideoPlayerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoPlayerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0E4A41F2F55A31A004042A1 /* VideoPlayerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VideoPlayerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -65,6 +72,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0497B5F30322E960044F836 /* FirebaseDatabase in Frameworks */,
+				C0497B5D30322E910044F836 /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,6 +94,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C0497B5B30322E910044F836 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		C0E4A3FF2F55A317004042A1 = {
 			isa = PBXGroup;
 			children = (
@@ -92,6 +108,8 @@
 				C0E4A4182F55A31A004042A1 /* VideoPlayerTests */,
 				C0E4A4222F55A31A004042A1 /* VideoPlayerUITests */,
 				C0E4A4092F55A317004042A1 /* Products */,
+				C0108D223032285200F71C38 /* GoogleService-Info.plist */,
+				C0497B5B30322E910044F836 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -125,6 +143,8 @@
 			);
 			name = VideoPlayer;
 			packageProductDependencies = (
+				C0497B5C30322E910044F836 /* FirebaseAuth */,
+				C0497B5E30322E960044F836 /* FirebaseDatabase */,
 			);
 			productName = VideoPlayer;
 			productReference = C0E4A4082F55A317004042A1 /* VideoPlayer.app */;
@@ -208,6 +228,9 @@
 			);
 			mainGroup = C0E4A3FF2F55A317004042A1;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C0108D243032293400F71C38 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = C0E4A4092F55A317004042A1 /* Products */;
 			projectDirPath = "";
@@ -225,6 +248,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0108D233032285200F71C38 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -605,6 +629,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C0108D243032293400F71C38 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.17.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C0497B5C30322E910044F836 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0108D243032293400F71C38 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		C0497B5E30322E960044F836 /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0108D243032293400F71C38 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C0E4A4002F55A317004042A1 /* Project object */;
 }
