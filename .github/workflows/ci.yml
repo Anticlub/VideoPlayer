@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select latest Xcode
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)/Contents/Developer"
+
+      # UI tests (launch tests) are flaky and slow on headless CI simulators,
+      # so this gate runs the deterministic unit tests. The full UI suite is
+      # covered by Xcode Cloud.
+      - name: Build & test
+        run: |
+          # Pick whatever tvOS simulator the runner's Xcode ships with,
+          # instead of hardcoding a device name that varies across images.
+          UDID=$(xcrun simctl list devices available --json \
+            | jq -r '.devices | to_entries[] | select(.key | test("tvOS")) | .value[] | select(.isAvailable) | .udid' \
+            | head -1)
+          echo "Using tvOS simulator: $UDID"
+          # The test target's deployment target (26.2) can be higher than the
+          # simulator runtime a runner ships with; pin it to the app's floor
+          # (26.0) so the tests run on any tvOS 26.x simulator.
+          xcodebuild test \
+            -project VideoPlayer.xcodeproj \
+            -scheme VideoPlayer \
+            -destination "id=$UDID" \
+            -testPlan VideoPlayer \
+            -skip-testing:VideoPlayerUITests \
+            -enableCodeCoverage YES \
+            TVOS_DEPLOYMENT_TARGET=26.0
