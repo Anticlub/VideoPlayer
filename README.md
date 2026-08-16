@@ -3,6 +3,7 @@
 > Reproductor de streaming para **Apple TV / iPhone** hecho con **SwiftUI**: HLS,
 > **FairPlay DRM** de punta a punta, listas M3U y controles de reproducción para TV.
 
+[![CI](https://github.com/Anticlub/VideoPlayer/actions/workflows/ci.yml/badge.svg)](https://github.com/Anticlub/VideoPlayer/actions/workflows/ci.yml)
 ![Platform](https://img.shields.io/badge/platform-tvOS%20%7C%20iOS-000000?logo=apple&logoColor=white)
 ![Language](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
 ![UI](https://img.shields.io/badge/SwiftUI-blue)
@@ -44,7 +45,7 @@ Mismo producto, dos ecosistemas nativos.
 | Login + backend | 🚧 | ✅ Firebase |
 | Backend compartido | 🚧 | ✅ |
 | Tests unitarios | ✅ | 🚧 |
-| CI | 🚧 | 🚧 |
+| CI | ✅ | ✅ |
 
 Las casillas 🚧 son el roadmap público del proyecto multiplataforma.
 
