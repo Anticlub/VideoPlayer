@@ -52,6 +52,7 @@ struct ContentView: View {
         }
         .animation(.easeInOut, value: showChannelInfo)
         .task {
+            await vm.loadRemotePlaylists()
             await vm.loadInitialPlaylist()
         }
         .onChange(of: showChannelBar) { _, isShown in

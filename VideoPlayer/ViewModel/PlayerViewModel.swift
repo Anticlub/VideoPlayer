@@ -14,6 +14,7 @@ import AVFoundation
 @MainActor
 final class PlayerViewModel {
     private let playerService : PlayerServiceProtocol
+    private let playlistRepository: PlaylistRepositoryProtocol
 
     var player: AVPlayer? {
         playerService.player
@@ -63,8 +64,13 @@ final class PlayerViewModel {
         }
     }
 
-    init(playerService: PlayerServiceProtocol, initialChannels: [Channel]? = nil) {
+    init(
+        playerService: PlayerServiceProtocol,
+        playlistRepository: PlaylistRepositoryProtocol = FirebasePlaylistRepository(),
+        initialChannels: [Channel]? = nil
+    ) {
         self.playerService = playerService
+        self.playlistRepository = playlistRepository
         let sources: [PlaylistSource] = [
             PlaylistSource(
                 name: "España (Live)",
@@ -147,6 +153,18 @@ final class PlayerViewModel {
     func loadInitialPlaylist() async {
         guard let initialSource = selectedPlaylist else { return }
         await loadPlaylist(from: initialSource.url)
+    }
+
+    /// Carga las playlists del usuario desde el backend compartido (Firebase).
+    /// En iPhone (usuario logueado) reemplaza las de demo; en tvOS o sin sesión
+    /// no hay uid, se devuelve `[]` y se mantienen las de demo.
+    func loadRemotePlaylists() async {
+        guard let remote = try? await playlistRepository.fetchPlaylists(),
+              !remote.isEmpty else {
+            return
+        }
+        playlistSources = remote
+        selectedPlaylist = remote.first
     }
     
     func selectPlaylist(_ source: PlaylistSource) async {
