@@ -42,7 +42,7 @@ Mismo producto, dos ecosistemas nativos.
 | Playlists M3U | ✅ | ✅ |
 | DRM | ✅ FairPlay | 🚧 Widevine |
 | EPG | 🚧 | 🚧 |
-| Login + backend | 🚧 | ✅ Firebase |
+| Login | ✅ (iPhone) | ✅ Firebase |
 | Backend compartido | 🚧 | ✅ |
 | Tests unitarios | ✅ | 🚧 |
 | CI | ✅ | ✅ |
